@@ -19,6 +19,7 @@ import {
   LogOut,
   Compass,
   UserCog,
+  Building,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -60,6 +61,11 @@ export function SidebarNav() {
       href: '/staff',
       icon: <UserCog />,
       label: 'Staff',
+    },
+    {
+      href: '/configuration',
+      icon: <Building />,
+      label: 'Hotel Config',
     },
     {
       href: '/billing',
