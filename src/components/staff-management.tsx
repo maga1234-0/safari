@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -18,7 +19,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { staffMembers } from '@/lib/data';
-import type { StaffRole } from '@/lib/types';
+import type { StaffMember, StaffRole } from '@/lib/types';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { PlusCircle, Edit, Trash } from 'lucide-react';
 import {
@@ -39,6 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 
 const roleVariant: Record<StaffRole, BadgeProps['variant']> = {
   'Admin': 'destructive',
@@ -47,6 +49,44 @@ const roleVariant: Record<StaffRole, BadgeProps['variant']> = {
 };
 
 export function StaffManagement() {
+  const { toast } = useToast();
+  const [staff, setStaff] = useState<StaffMember[]>(staffMembers);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [newRole, setNewRole] = useState<StaffRole | ''>('');
+
+  const handleAddStaff = () => {
+    if (!newName || !newEmail || !newRole) {
+      toast({
+        variant: 'destructive',
+        title: 'Missing Information',
+        description: 'Please fill out all fields to add a staff member.',
+      });
+      return;
+    }
+
+    const newStaffMember: StaffMember = {
+      id: `S${(staff.length + 10).toString().padStart(3, '0')}`, // Use a more robust ID in a real app
+      name: newName,
+      email: newEmail,
+      role: newRole,
+    };
+
+    setStaff([...staff, newStaffMember]);
+
+    toast({
+      title: 'Staff Member Added',
+      description: `${newName} has been added to the staff list.`,
+    });
+
+    // Reset form and close dialog
+    setNewName('');
+    setNewEmail('');
+    setNewRole('');
+    setDialogOpen(false);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -64,12 +104,12 @@ export function StaffManagement() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {staffMembers.map((staff) => (
-              <TableRow key={staff.id}>
-                <TableCell className="font-medium">{staff.name}</TableCell>
-                <TableCell>{staff.email}</TableCell>
+            {staff.map((staffMember) => (
+              <TableRow key={staffMember.id}>
+                <TableCell className="font-medium">{staffMember.name}</TableCell>
+                <TableCell>{staffMember.email}</TableCell>
                 <TableCell>
-                  <Badge variant={roleVariant[staff.role]}>{staff.role}</Badge>
+                  <Badge variant={roleVariant[staffMember.role]}>{staffMember.role}</Badge>
                 </TableCell>
                 <TableCell className="text-right">
                     <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -85,7 +125,7 @@ export function StaffManagement() {
         </Table>
       </CardContent>
       <CardFooter className="border-t px-6 py-4">
-        <Dialog>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <PlusCircle className="mr-2 h-4 w-4" /> Add Staff
@@ -103,19 +143,19 @@ export function StaffManagement() {
                 <Label htmlFor="name" className="text-right">
                   Name
                 </Label>
-                <Input id="name" defaultValue="Pedro Duarte" className="col-span-3" />
+                <Input id="name" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. John Doe" className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="email" className="text-right">
                   Email
                 </Label>
-                <Input id="email" defaultValue="pedro.duarte@example.com" className="col-span-3" />
+                <Input id="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="e.g. john@safari.com" className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="role" className="text-right">
                   Role
                 </Label>
-                 <Select>
+                 <Select value={newRole} onValueChange={(value: StaffRole) => setNewRole(value)}>
                     <SelectTrigger className="col-span-3">
                         <SelectValue placeholder="Select a role" />
                     </SelectTrigger>
@@ -128,7 +168,7 @@ export function StaffManagement() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit">Save changes</Button>
+              <Button onClick={handleAddStaff}>Save changes</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
