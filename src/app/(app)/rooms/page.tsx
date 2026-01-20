@@ -21,7 +21,7 @@ import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { rooms as initialRooms } from '@/lib/data';
 import type { Room, RoomStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Edit, Trash } from 'lucide-react';
+import { PlusCircle, Edit, Trash, Search } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -42,8 +42,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 const roomStatusVariant: Record<RoomStatus, BadgeProps['variant']> = {
-  'Available': 'default',
-  'Occupied': 'secondary',
+  'Available': 'success',
+  'Occupied': 'warning',
   'Maintenance': 'destructive',
 };
 
@@ -53,6 +53,7 @@ export default function RoomsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const [roomNumber, setRoomNumber] = useState('');
   const [type, setType] = useState<Room['type'] | ''>('');
@@ -128,15 +129,32 @@ export default function RoomsPage() {
 
     setDialogOpen(false);
   };
+  
+  const filteredRooms = rooms.filter(room =>
+    room.roomNumber.toString().includes(searchTerm) ||
+    room.type.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div>
       <h1 className="text-3xl font-bold font-headline tracking-tight">Room Management</h1>
       <p className="text-muted-foreground">Track room availability, status, and details.</p>
       <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>All Rooms</CardTitle>
-          <CardDescription>View and manage all rooms in the hotel.</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>All Rooms</CardTitle>
+            <CardDescription>View and manage all rooms in the hotel.</CardDescription>
+          </div>
+          <div className="relative w-full max-w-sm">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search by room or type..."
+              className="w-full appearance-none bg-background pl-8 shadow-none"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -150,7 +168,7 @@ export default function RoomsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rooms.map((room) => (
+              {filteredRooms.map((room) => (
                 <TableRow key={room.id}>
                   <TableCell className="font-medium">{room.roomNumber}</TableCell>
                   <TableCell>{room.type}</TableCell>
