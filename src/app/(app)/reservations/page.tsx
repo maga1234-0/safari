@@ -152,7 +152,7 @@ export default function ReservationsPage() {
     }
 
     const roomRef = doc(firestore, 'rooms', roomId);
-    const newRoomStatus = status === 'Cancelled' ? 'Available' : 'Occupied';
+    const newRoomStatus = status === 'Cancelled' || status === 'CheckedOut' ? 'Available' : 'Occupied';
 
     if (dialogMode === 'add') {
       const newBooking = {
@@ -164,6 +164,7 @@ export default function ReservationsPage() {
         checkOut,
         status: status as BookingStatus,
         createdAt: serverTimestamp(),
+        pricePerNight: selectedRoom.price,
       };
       addDocumentNonBlocking(collection(firestore, 'reservations'), newBooking);
       updateDocumentNonBlocking(roomRef, { status: newRoomStatus });
@@ -176,6 +177,10 @@ export default function ReservationsPage() {
         const oldRoomRef = doc(firestore, 'rooms', selectedBooking.roomId);
         updateDocumentNonBlocking(oldRoomRef, { status: 'Available' });
       }
+      
+      const pricePerNight = selectedBooking.roomId !== roomId 
+        ? selectedRoom.price 
+        : selectedBooking.pricePerNight ?? selectedRoom.price;
 
       const updatedBooking = { 
         ...selectedBooking, 
@@ -184,7 +189,8 @@ export default function ReservationsPage() {
         roomNumber: selectedRoom.roomNumber,
         checkIn, 
         checkOut, 
-        status: status as BookingStatus 
+        status: status as BookingStatus,
+        pricePerNight,
       };
       updateDocumentNonBlocking(doc(firestore, 'reservations', selectedBooking.id), updatedBooking);
       updateDocumentNonBlocking(roomRef, { status: newRoomStatus });
@@ -349,8 +355,11 @@ export default function ReservationsPage() {
                       <SelectValue placeholder="Select a status" />
                   </SelectTrigger>
                   <SelectContent>
-                      <SelectItem value="Confirmed">Confirmed</SelectItem>
                       <SelectItem value="Pending">Pending</SelectItem>
+                      <SelectItem value="Reserved">Reserved</SelectItem>
+                      <SelectItem value="Confirmed">Confirmed</SelectItem>
+                      <SelectItem value="CheckedIn">Checked-In</SelectItem>
+                      <SelectItem value="CheckedOut">Checked-Out</SelectItem>
                       <SelectItem value="Cancelled">Cancelled</SelectItem>
                   </SelectContent>
               </Select>

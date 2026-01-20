@@ -42,6 +42,9 @@ const bookingStatusVariant: Record<BookingStatus, BadgeProps['variant']> = {
   'Confirmed': 'success',
   'Pending': 'warning',
   'Cancelled': 'destructive',
+  'CheckedIn': 'default',
+  'CheckedOut': 'secondary',
+  'Reserved': 'default',
 };
 
 function toDateSafe(date: any): Date {
@@ -71,29 +74,31 @@ export default function Dashboard() {
       return { totalRevenue: 0, occupancyRate: 0, newBookings: 0 };
     }
 
-    const confirmedBookings = bookings.filter(b => b.status === 'Confirmed');
+    const revenueBookings = bookings.filter(b => 
+        ['Confirmed', 'CheckedIn', 'CheckedOut'].includes(b.status)
+    );
 
-    const totalRevenue = confirmedBookings.reduce((acc, booking) => {
-      const room = rooms.find(r => r.id === booking.roomId);
-      if (room) {
-        const nights = differenceInDays(toDateSafe(booking.checkOut), toDateSafe(booking.checkIn));
-        return acc + room.price * (nights > 0 ? nights : 1);
-      }
-      return acc;
+    const totalRevenue = revenueBookings.reduce((acc, booking) => {
+      const nights = differenceInDays(toDateSafe(booking.checkOut), toDateSafe(booking.checkIn));
+      const nightsCount = nights > 0 ? nights : 1;
+
+      // Prioritize price from booking, fallback to room price
+      const price = booking.pricePerNight ?? rooms.find(r => r.id === booking.roomId)?.price ?? 0;
+
+      return acc + (price * nightsCount);
     }, 0);
 
     const today = startOfDay(new Date());
-    const occupiedRooms = new Set(
-      confirmedBookings
-        .filter(b => {
-            const checkIn = startOfDay(toDateSafe(b.checkIn));
-            const checkOut = startOfDay(toDateSafe(b.checkOut));
-            return today >= checkIn && today < checkOut;
-        })
-        .map(b => b.roomNumber)
-    );
+    const occupiedRoomsToday = bookings.filter(b => {
+        const checkIn = startOfDay(toDateSafe(b.checkIn));
+        const checkOut = startOfDay(toDateSafe(b.checkOut));
+        const isOccupying = today >= checkIn && today < checkOut;
+        const isOccupyingStatus = b.status === 'Confirmed' || b.status === 'CheckedIn';
+        return isOccupying && isOccupyingStatus;
+    });
 
-    const occupancyRate = rooms.length > 0 ? (occupiedRooms.size / rooms.length) * 100 : 0;
+    const occupiedRoomNumbers = new Set(occupiedRoomsToday.map(b => b.roomNumber));
+    const occupancyRate = rooms.length > 0 ? (occupiedRoomNumbers.size / rooms.length) * 100 : 0;
     
     const newBookings = bookings.filter(b => isToday(toDateSafe(b.createdAt))).length;
 
@@ -130,7 +135,7 @@ export default function Dashboard() {
               ${metrics.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
             <p className="text-xs text-muted-foreground">
-              Calculated from confirmed bookings
+              From confirmed, checked-in, and checked-out bookings
             </p>
           </CardContent>
         </Card>

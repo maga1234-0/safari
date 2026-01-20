@@ -62,6 +62,10 @@
           "type": "number",
           "description": "Denormalized room number."
         },
+        "pricePerNight": {
+          "type": "number",
+          "description": "Price per night at the time of booking."
+        },
         "checkIn": {
           "type": "string",
           "description": "Date of check-in.",
