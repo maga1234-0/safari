@@ -21,9 +21,10 @@ import {
   ChartTooltipContent,
   ChartConfig,
 } from '@/components/ui/chart';
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from 'recharts';
-import { dashboardMetrics, revenueData, recentBookings, bookingStatusColors } from '@/lib/data';
-import { Badge } from '@/components/ui/badge';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { dashboardMetrics, recentBookings, revenueData } from '@/lib/data';
+import type { BookingStatus } from '@/lib/types';
+import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { CircleDollarSign, Percent, CalendarPlus } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -33,6 +34,12 @@ const chartConfig = {
     color: 'hsl(var(--chart-1))',
   },
 } satisfies ChartConfig;
+
+const bookingStatusVariant: Record<BookingStatus, BadgeProps['variant']> = {
+  'Confirmed': 'default',
+  'Pending': 'secondary',
+  'Cancelled': 'destructive',
+};
 
 export default function Dashboard() {
   return (
@@ -145,12 +152,7 @@ export default function Dashboard() {
                       {format(booking.checkOut, 'MM/dd/yyyy')}
                     </TableCell>
                     <TableCell className="text-right">
-                       <Badge
-                        className="text-white"
-                        style={{
-                          backgroundColor: bookingStatusColors[booking.status],
-                        }}
-                      >
+                       <Badge variant={bookingStatusVariant[booking.status]}>
                         {booking.status}
                       </Badge>
                     </TableCell>

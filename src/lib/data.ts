@@ -23,12 +23,6 @@ export const recentBookings: Booking[] = [
   { id: 'BK005', clientName: 'Chidinma Okoro', roomNumber: 210, checkIn: new Date('2024-08-15'), checkOut: new Date('2024-08-20'), status: 'Cancelled' },
 ];
 
-export const bookingStatusColors: Record<BookingStatus, string> = {
-  'Confirmed': 'hsl(var(--primary))',
-  'Pending': 'hsl(var(--accent))',
-  'Cancelled': 'hsl(var(--destructive))',
-};
-
 export const rooms: Room[] = [
     { id: 'R101', roomNumber: 101, type: 'Single', status: 'Available', price: 120 },
     { id: 'R102', roomNumber: 102, type: 'Double', status: 'Occupied', price: 180 },
@@ -39,9 +33,3 @@ export const rooms: Room[] = [
     { id: 'R203', roomNumber: 203, type: 'Double', status: 'Available', price: 195 },
     { id: 'R301', roomNumber: 301, type: 'Single', status: 'Maintenance', price: 110 },
 ];
-
-export const roomStatusColors: Record<RoomStatus, string> = {
-  'Available': 'hsl(var(--primary))',
-  'Occupied': 'hsl(var(--accent))',
-  'Maintenance': 'hsl(var(--destructive))',
-};

@@ -13,8 +13,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { rooms, roomStatusColors } from '@/lib/data';
+import { Badge, type BadgeProps } from '@/components/ui/badge';
+import { rooms } from '@/lib/data';
+import type { RoomStatus } from '@/lib/types';
+
+const roomStatusVariant: Record<RoomStatus, BadgeProps['variant']> = {
+  'Available': 'default',
+  'Occupied': 'secondary',
+  'Maintenance': 'destructive',
+};
 
 export default function RoomsPage() {
   return (
@@ -42,12 +49,7 @@ export default function RoomsPage() {
                   <TableCell className="font-medium">{room.roomNumber}</TableCell>
                   <TableCell>{room.type}</TableCell>
                   <TableCell>
-                    <Badge
-                      className="text-white"
-                      style={{
-                        backgroundColor: roomStatusColors[room.status],
-                      }}
-                    >
+                    <Badge variant={roomStatusVariant[room.status]}>
                       {room.status}
                     </Badge>
                   </TableCell>
