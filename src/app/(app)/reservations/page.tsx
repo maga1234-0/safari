@@ -132,7 +132,7 @@ export default function ReservationsPage() {
   };
 
   const handleSave = () => {
-    if (!clientName || !roomId || !checkIn || !checkOut || !status || !user) {
+    if (!clientName || !roomId || !checkIn || !checkOut || !status || !user || !firestore) {
       toast({
         variant: 'destructive',
         title: 'Missing Information',
@@ -151,6 +151,9 @@ export default function ReservationsPage() {
         return;
     }
 
+    const roomRef = doc(firestore, 'rooms', roomId);
+    const newRoomStatus = status === 'Cancelled' ? 'Available' : 'Occupied';
+
     if (dialogMode === 'add') {
       const newBooking = {
         clientId: user.uid,
@@ -163,11 +166,17 @@ export default function ReservationsPage() {
         createdAt: serverTimestamp(),
       };
       addDocumentNonBlocking(collection(firestore, 'reservations'), newBooking);
+      updateDocumentNonBlocking(roomRef, { status: newRoomStatus });
       toast({
         title: 'Reservation Added',
         description: `Booking for ${clientName} has been created.`,
       });
     } else if (dialogMode === 'edit' && selectedBooking) {
+      if (selectedBooking.roomId !== roomId) {
+        const oldRoomRef = doc(firestore, 'rooms', selectedBooking.roomId);
+        updateDocumentNonBlocking(oldRoomRef, { status: 'Available' });
+      }
+
       const updatedBooking = { 
         ...selectedBooking, 
         clientName, 
@@ -178,6 +187,7 @@ export default function ReservationsPage() {
         status: status as BookingStatus 
       };
       updateDocumentNonBlocking(doc(firestore, 'reservations', selectedBooking.id), updatedBooking);
+      updateDocumentNonBlocking(roomRef, { status: newRoomStatus });
       toast({
         title: 'Reservation Updated',
         description: `Booking for ${clientName} has been updated.`,
@@ -187,8 +197,11 @@ export default function ReservationsPage() {
     setDialogOpen(false);
   };
 
-  const handleDelete = (bookingId: string) => {
-    deleteDocumentNonBlocking(doc(firestore, 'reservations', bookingId));
+  const handleDelete = (booking: Booking) => {
+    if (!firestore) return;
+    deleteDocumentNonBlocking(doc(firestore, 'reservations', booking.id));
+    const roomRef = doc(firestore, 'rooms', booking.roomId);
+    updateDocumentNonBlocking(roomRef, { status: 'Available' });
     toast({
       title: 'Reservation Deleted',
       description: 'The booking has been removed.',
@@ -252,7 +265,7 @@ export default function ReservationsPage() {
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(booking)}>
                         <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(booking.id)}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(booking)}>
                         <Trash className="h-4 w-4" />
                     </Button>
                   </TableCell>
