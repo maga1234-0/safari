@@ -26,7 +26,7 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import type { Booking, BookingStatus, Room } from '@/lib/types';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { CircleDollarSign, Percent, CalendarPlus, Loader2 } from 'lucide-react';
-import { format, differenceInDays, isToday, startOfDay, toDate, subMonths, startOfMonth } from 'date-fns';
+import { format, differenceInDays, isToday, startOfDay, toDate, getYear, startOfYear, endOfYear } from 'date-fns';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
 
@@ -120,34 +120,36 @@ export default function Dashboard() {
       return [];
     }
 
-    const sixMonthsAgo = subMonths(new Date(), 5);
-    const monthLabels = Array.from({ length: 6 }, (_, i) => {
-        const monthDate = subMonths(new Date(), 5 - i);
-        return format(monthDate, 'MMM');
-    });
+    const yearStart = startOfYear(new Date());
+    const yearEnd = endOfYear(new Date());
+
+    const monthLabels = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
     
     const monthlyTotals = monthLabels.reduce((acc, month) => {
       acc[month] = 0;
       return acc;
     }, {} as Record<string, number>);
 
-    const revenueBookings = bookings.filter(b => 
-        ['Confirmed', 'CheckedIn', 'CheckedOut'].includes(b.status)
-    );
+    const revenueBookings = bookings.filter(b => {
+        const checkInDate = toDateSafe(b.checkIn);
+        const isCurrentYear = checkInDate >= yearStart && checkInDate <= yearEnd;
+        const isRevenueStatus = ['Confirmed', 'CheckedIn', 'CheckedOut'].includes(b.status);
+        return isCurrentYear && isRevenueStatus;
+    });
 
     revenueBookings.forEach(booking => {
       const checkInDate = toDateSafe(booking.checkIn);
+      const month = format(checkInDate, 'MMM');
+      const nights = differenceInDays(toDateSafe(booking.checkOut), toDateSafe(booking.checkIn));
+      const nightsCount = nights > 0 ? nights : 1;
+      const price = booking.pricePerNight ?? rooms.find(r => r.id === booking.roomId)?.price ?? 0;
+      const bookingRevenue = price * nightsCount;
       
-      if (checkInDate >= startOfMonth(sixMonthsAgo)) {
-        const month = format(checkInDate, 'MMM');
-        const nights = differenceInDays(toDateSafe(booking.checkOut), toDateSafe(booking.checkIn));
-        const nightsCount = nights > 0 ? nights : 1;
-        const price = booking.pricePerNight ?? rooms.find(r => r.id === booking.roomId)?.price ?? 0;
-        const bookingRevenue = price * nightsCount;
-        
-        if (monthlyTotals.hasOwnProperty(month)) {
-          monthlyTotals[month] += bookingRevenue;
-        }
+      if (monthlyTotals.hasOwnProperty(month)) {
+        monthlyTotals[month] += bookingRevenue;
       }
     });
 
@@ -216,7 +218,7 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="font-headline">Revenue Overview</CardTitle>
             <CardDescription>
-              Revenue performance over the last 6 months.
+              Revenue performance for the current year.
             </CardDescription>
           </CardHeader>
           <CardContent>
