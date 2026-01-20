@@ -7,6 +7,7 @@ export type Booking = {
   checkIn: Date;
   checkOut: Date;
   status: BookingStatus;
+  createdAt: Date;
 };
 
 export type Revenue = {

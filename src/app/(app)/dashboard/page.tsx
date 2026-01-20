@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -23,11 +23,11 @@ import {
   ChartConfig,
 } from '@/components/ui/chart';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { dashboardMetrics as initialMetrics, revenueData as initialRevenueData } from '@/lib/data';
+import { revenueData as initialRevenueData, rooms } from '@/lib/data';
 import type { BookingStatus } from '@/lib/types';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { CircleDollarSign, Percent, CalendarPlus } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, differenceInDays, isToday, startOfDay } from 'date-fns';
 import { useBookings } from '@/context/bookings-context';
 
 const chartConfig = {
@@ -44,43 +44,48 @@ const bookingStatusVariant: Record<BookingStatus, BadgeProps['variant']> = {
 };
 
 export default function Dashboard() {
-  const [metrics, setMetrics] = useState(initialMetrics);
-  const [revenueData, setRevenueData] = useState(initialRevenueData);
   const { bookings } = useBookings();
+  const revenueData = initialRevenueData;
+
+  const metrics = useMemo(() => {
+    const confirmedBookings = bookings.filter(b => b.status === 'Confirmed');
+
+    const totalRevenue = confirmedBookings.reduce((acc, booking) => {
+      const room = rooms.find(r => r.roomNumber === booking.roomNumber);
+      if (room) {
+        const nights = differenceInDays(booking.checkOut, booking.checkIn);
+        return acc + room.price * (nights > 0 ? nights : 1);
+      }
+      return acc;
+    }, 0);
+
+    const today = startOfDay(new Date());
+    const occupiedRooms = new Set(
+      confirmedBookings
+        .filter(b => {
+            const checkIn = startOfDay(b.checkIn);
+            const checkOut = startOfDay(b.checkOut);
+            return today >= checkIn && today < checkOut;
+        })
+        .map(b => b.roomNumber)
+    );
+
+    const occupancyRate = rooms.length > 0 ? (occupiedRooms.size / rooms.length) * 100 : 0;
+    
+    const newBookings = bookings.filter(b => isToday(b.createdAt)).length;
+
+    return {
+      totalRevenue,
+      occupancyRate,
+      newBookings,
+    };
+  }, [bookings]);
 
   const recentBookings = useMemo(() => {
     return [...bookings]
-        .sort((a, b) => b.checkIn.getTime() - a.checkIn.getTime())
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
         .slice(0, 5);
   }, [bookings]);
-
-
-  useEffect(() => {
-    const metricsInterval = setInterval(() => {
-      setMetrics(prevMetrics => {
-        const newBookingsToday = prevMetrics.newBookings + (Math.random() > 0.95 ? 1 : 0);
-        return {
-          totalRevenue: prevMetrics.totalRevenue + Math.random() * 50,
-          occupancyRate: Math.max(0, Math.min(100, prevMetrics.occupancyRate + (Math.random() - 0.5))),
-          newBookings: newBookingsToday,
-        }
-      });
-    }, 2500);
-    
-    const revenueInterval = setInterval(() => {
-      setRevenueData(prevData => {
-        return prevData.map(monthData => ({
-          ...monthData,
-          revenue: Math.max(20000, monthData.revenue + (Math.random() - 0.5) * 2000)
-        }));
-      });
-    }, 3500);
-
-    return () => {
-      clearInterval(metricsInterval);
-      clearInterval(revenueInterval);
-    }
-  }, []);
 
   return (
     <div className="grid flex-1 items-start gap-4 sm:gap-6">
@@ -97,7 +102,7 @@ export default function Dashboard() {
               ${metrics.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
             <p className="text-xs text-muted-foreground">
-              Live data from booking system
+              Calculated from confirmed bookings
             </p>
           </CardContent>
         </Card>
@@ -113,7 +118,7 @@ export default function Dashboard() {
               {metrics.occupancyRate.toFixed(1)}%
             </div>
             <p className="text-xs text-muted-foreground">
-              Calculated in real-time
+              Based on available rooms
             </p>
           </CardContent>
         </Card>
@@ -127,7 +132,7 @@ export default function Dashboard() {
               +{metrics.newBookings}
             </div>
             <p className="text-xs text-muted-foreground">
-              Live updates
+              Based on creation date
             </p>
           </CardContent>
         </Card>

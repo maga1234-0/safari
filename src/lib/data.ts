@@ -16,11 +16,11 @@ export const revenueData: Revenue[] = [
 ];
 
 export const recentBookings: Booking[] = [
-  { id: 'BK001', clientName: 'Amina Diallo', roomNumber: 101, checkIn: new Date('2024-08-10'), checkOut: new Date('2024-08-15'), status: 'Confirmed' },
-  { id: 'BK002', clientName: 'Kwame Nkrumah', roomNumber: 205, checkIn: new Date('2024-08-11'), checkOut: new Date('2024-08-13'), status: 'Confirmed' },
-  { id: 'BK003', clientName: 'Fatoumata Keita', roomNumber: 302, checkIn: new Date('2024-08-12'), checkOut: new Date('2024-08-18'), status: 'Pending' },
-  { id: 'BK004', clientName: 'David Adewale', roomNumber: 108, checkIn: new Date('2024-08-14'), checkOut: new Date('2024-08-16'), status: 'Confirmed' },
-  { id: 'BK005', clientName: 'Chidinma Okoro', roomNumber: 210, checkIn: new Date('2024-08-15'), checkOut: new Date('2024-08-20'), status: 'Cancelled' },
+  { id: 'BK001', clientName: 'Amina Diallo', roomNumber: 101, checkIn: new Date('2024-08-10'), checkOut: new Date('2024-08-15'), status: 'Confirmed', createdAt: new Date('2024-08-01') },
+  { id: 'BK002', clientName: 'Kwame Nkrumah', roomNumber: 205, checkIn: new Date('2024-08-11'), checkOut: new Date('2024-08-13'), status: 'Confirmed', createdAt: new Date('2024-08-02') },
+  { id: 'BK003', clientName: 'Fatoumata Keita', roomNumber: 302, checkIn: new Date('2024-08-12'), checkOut: new Date('2024-08-18'), status: 'Pending', createdAt: new Date('2024-08-03') },
+  { id: 'BK004', clientName: 'David Adewale', roomNumber: 108, checkIn: new Date('2024-08-14'), checkOut: new Date('2024-08-16'), status: 'Confirmed', createdAt: new Date('2024-08-04') },
+  { id: 'BK005', clientName: 'Chidinma Okoro', roomNumber: 210, checkIn: new Date('2024-08-15'), checkOut: new Date('2024-08-20'), status: 'Cancelled', createdAt: new Date('2024-08-05') },
 ];
 
 export const rooms: Room[] = [

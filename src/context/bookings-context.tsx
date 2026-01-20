@@ -6,7 +6,7 @@ import { recentBookings as initialBookings } from '@/lib/data';
 
 interface BookingsContextType {
   bookings: Booking[];
-  addBooking: (booking: Omit<Booking, 'id'>) => void;
+  addBooking: (booking: Omit<Booking, 'id' | 'createdAt'>) => void;
   updateBooking: (booking: Booking) => void;
   deleteBooking: (bookingId: string) => void;
 }
@@ -16,10 +16,11 @@ const BookingsContext = createContext<BookingsContextType | undefined>(undefined
 export function BookingsProvider({ children }: { children: ReactNode }) {
   const [bookings, setBookings] = useState<Booking[]>(initialBookings);
 
-  const addBooking = (booking: Omit<Booking, 'id'>) => {
+  const addBooking = (booking: Omit<Booking, 'id' | 'createdAt'>) => {
     const newBooking: Booking = {
       ...booking,
       id: `BK${Math.floor(Math.random() * 1000) + 100}`,
+      createdAt: new Date(),
     };
     setBookings(prevBookings => [newBooking, ...prevBookings]);
   };
