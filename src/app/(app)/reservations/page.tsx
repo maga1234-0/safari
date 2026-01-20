@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   Card,
   CardContent,
@@ -54,6 +55,9 @@ const bookingStatusVariant: Record<BookingStatus, BadgeProps['variant']> = {
   'Confirmed': 'success',
   'Pending': 'warning',
   'Cancelled': 'destructive',
+  'CheckedIn': 'default',
+  'CheckedOut': 'secondary',
+  'Reserved': 'default',
 };
 
 function toDateSafe(date: any): Date {
@@ -67,6 +71,7 @@ export default function ReservationsPage() {
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user } = useUser();
+  const searchParams = useSearchParams();
   
   const bookingsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -83,6 +88,7 @@ export default function ReservationsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [prefilled, setPrefilled] = useState(false);
 
   // Form state
   const [clientName, setClientName] = useState('');
@@ -90,6 +96,24 @@ export default function ReservationsPage() {
   const [checkIn, setCheckIn] = useState<Date | undefined>();
   const [checkOut, setCheckOut] = useState<Date | undefined>();
   const [status, setStatus] = useState<BookingStatus | ''>('');
+
+  useEffect(() => {
+    const roomIdFromQuery = searchParams.get('roomId');
+    if (roomIdFromQuery && rooms && !prefilled) {
+      const roomExists = rooms.some(r => r.id === roomIdFromQuery);
+      if (roomExists) {
+        setDialogMode('add');
+        setSelectedBooking(null);
+        setClientName('');
+        setRoomId(roomIdFromQuery);
+        setCheckIn(undefined);
+        setCheckOut(undefined);
+        setStatus('Pending');
+        setDialogOpen(true);
+        setPrefilled(true);
+      }
+    }
+  }, [searchParams, rooms, prefilled]);
 
   const handleOpenAddDialog = () => {
     setDialogMode('add');

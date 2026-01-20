@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Card,
   CardContent,
@@ -51,6 +52,7 @@ const roomStatusVariant: Record<RoomStatus, BadgeProps['variant']> = {
 export default function RoomsPage() {
   const { toast } = useToast();
   const firestore = useFirestore();
+  const router = useRouter();
   
   const roomsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -86,6 +88,10 @@ export default function RoomsPage() {
     setStatus(room.status);
     setPrice(String(room.price));
     setDialogOpen(true);
+  };
+
+  const handleBookNow = (room: Room) => {
+    router.push(`/reservations?roomId=${room.id}`);
   };
   
   const handleDelete = (roomId: string) => {
@@ -191,6 +197,9 @@ export default function RoomsPage() {
                   </TableCell>
                   <TableCell>${room.price.toFixed(2)}</TableCell>
                   <TableCell className="text-right">
+                    {room.status === 'Available' && (
+                        <Button onClick={() => handleBookNow(room)} size="sm" className="mr-2">Book Now</Button>
+                    )}
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(room)}>
                         <Edit className="h-4 w-4" />
                     </Button>
