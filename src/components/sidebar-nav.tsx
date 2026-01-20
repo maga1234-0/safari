@@ -15,7 +15,6 @@ import {
   Users,
   CreditCard,
   Bot,
-  Settings,
   LogOut,
   Compass,
   UserCog,
@@ -103,14 +102,6 @@ export function SidebarNav() {
       </SidebarMenu>
       <SidebarFooter className="mt-auto">
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={isActive('/settings')} tooltip="Settings">
-              <Link href="/settings">
-                <Settings />
-                <span>Settings</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleLogout} tooltip="Logout">
               <LogOut />
