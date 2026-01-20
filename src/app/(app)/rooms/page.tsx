@@ -95,6 +95,7 @@ export default function RoomsPage() {
   };
   
   const handleDelete = (roomId: string) => {
+    if (!firestore) return;
     deleteDocumentNonBlocking(doc(firestore, 'rooms', roomId));
     toast({
       title: 'Room Deleted',
@@ -103,7 +104,7 @@ export default function RoomsPage() {
   };
 
   const handleSave = () => {
-    if (!roomNumber || !type || !status || !price) {
+    if (!roomNumber || !type || !status || !price || !firestore) {
       toast({
         variant: 'destructive',
         title: 'Missing Information',
