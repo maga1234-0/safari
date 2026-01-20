@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Compass, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useAuth, useUser, initiateEmailSignIn } from "@/firebase";
+import { useAuth, useUser, initiateEmailSignIn, initiateEmailSignUp } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
+import { FirebaseError } from "firebase/app";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -31,14 +32,38 @@ export default function LoginPage() {
     setIsLoggingIn(true);
     try {
       await initiateEmailSignIn(auth, email, password);
-      // onAuthStateChanged will handle the redirect
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Login Failed",
-        description: error.message || "An unknown error occurred.",
-      });
-      setIsLoggingIn(false);
+      // On success, onAuthStateChanged will trigger the redirect.
+    } catch (error) {
+      if (error instanceof FirebaseError && error.code === 'auth/invalid-credential') {
+        // If login fails because the user doesn't exist, try creating an account.
+        try {
+          await initiateEmailSignUp(auth, email, password);
+          // On success, onAuthStateChanged will trigger the redirect.
+        } catch (signUpError) {
+          if (signUpError instanceof FirebaseError) {
+            toast({
+              variant: "destructive",
+              title: "Sign-up Failed",
+              description: signUpError.message,
+            });
+          }
+          setIsLoggingIn(false);
+        }
+      } else if (error instanceof FirebaseError) {
+        toast({
+          variant: "destructive",
+          title: "Login Failed",
+          description: error.message,
+        });
+        setIsLoggingIn(false);
+      } else {
+         toast({
+          variant: "destructive",
+          title: "An Unknown Error Occurred",
+          description: "Please try again.",
+        });
+        setIsLoggingIn(false);
+      }
     }
   };
   
