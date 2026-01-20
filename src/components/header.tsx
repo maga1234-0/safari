@@ -20,12 +20,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SidebarTrigger } from './ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Skeleton } from './ui/skeleton';
+import { useUser } from '@/context/user-context';
 
 export function Header() {
   const [isMounted, setIsMounted] = React.useState(false);
-  const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar-1');
+  const { avatar, name } = useUser();
   const { resolvedTheme, setTheme } = useTheme();
   const router = useRouter();
 
@@ -67,13 +67,13 @@ export function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-full">
               <Avatar className="h-8 w-8">
-                {userAvatar && <AvatarImage src={userAvatar.imageUrl} alt="User avatar" />}
-                <AvatarFallback>AD</AvatarFallback>
+                <AvatarImage src={avatar} alt="User avatar" />
+                <AvatarFallback>{name.charAt(0)}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Admin Account</DropdownMenuLabel>
+            <DropdownMenuLabel>{name} Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => router.push('/settings')}>Settings</DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push('/dashboard')}>Support</DropdownMenuItem>
