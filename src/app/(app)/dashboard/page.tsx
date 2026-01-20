@@ -23,7 +23,7 @@ import {
   ChartConfig,
 } from '@/components/ui/chart';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { dashboardMetrics as initialMetrics, recentBookings, revenueData } from '@/lib/data';
+import { dashboardMetrics as initialMetrics, recentBookings, revenueData as initialRevenueData } from '@/lib/data';
 import type { Booking, BookingStatus } from '@/lib/types';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { CircleDollarSign, Percent, CalendarPlus } from 'lucide-react';
@@ -38,13 +38,14 @@ const chartConfig = {
 
 const bookingStatusVariant: Record<BookingStatus, BadgeProps['variant']> = {
   'Confirmed': 'success',
-  'Pending': 'warning',
+  'Pending': 'default',
   'Cancelled': 'destructive',
 };
 
 export default function Dashboard() {
   const [metrics, setMetrics] = useState(initialMetrics);
   const [bookings, setBookings] = useState<Booking[]>(recentBookings);
+  const [revenueData, setRevenueData] = useState(initialRevenueData);
 
   useEffect(() => {
     const metricsInterval = setInterval(() => {
@@ -64,7 +65,7 @@ export default function Dashboard() {
             if (Math.random() > 0.5 && prevBookings.length > 0) {
                 const bookingToUpdateIndex = Math.floor(Math.random() * prevBookings.length);
                 const newBookings = [...prevBookings];
-                const statusOptions: BookingStatus[] = ['Confirmed', 'Pending'];
+                const statusOptions: BookingStatus[] = ['Confirmed', 'Pending', 'Cancelled'];
                 newBookings[bookingToUpdateIndex].status = statusOptions[Math.floor(Math.random() * statusOptions.length)];
                 return newBookings.sort((a, b) => b.checkIn.getTime() - a.checkIn.getTime());
             } else {
@@ -81,10 +82,20 @@ export default function Dashboard() {
         });
       }
     }, 4000);
+    
+    const revenueInterval = setInterval(() => {
+      setRevenueData(prevData => {
+        return prevData.map(monthData => ({
+          ...monthData,
+          revenue: Math.max(20000, monthData.revenue + (Math.random() - 0.5) * 2000)
+        }));
+      });
+    }, 3500);
 
     return () => {
       clearInterval(metricsInterval);
       clearInterval(bookingInterval);
+      clearInterval(revenueInterval);
     }
   }, []);
 

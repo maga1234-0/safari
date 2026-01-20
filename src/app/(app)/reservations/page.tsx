@@ -50,8 +50,8 @@ import {
 import { cn } from "@/lib/utils"
 
 const bookingStatusVariant: Record<BookingStatus, BadgeProps['variant']> = {
-  'Confirmed': 'default',
-  'Pending': 'secondary',
+  'Confirmed': 'success',
+  'Pending': 'default',
   'Cancelled': 'destructive',
 };
 
