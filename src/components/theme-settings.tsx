@@ -8,10 +8,10 @@ import {
   CardDescription,
   CardContent,
 } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { Skeleton } from './ui/skeleton';
+import { Sun, Moon, Laptop } from 'lucide-react';
 
 export function ThemeSettings() {
   const { setTheme, theme } = useTheme();
@@ -29,49 +29,34 @@ export function ThemeSettings() {
       </CardHeader>
       <CardContent>
         {mounted ? (
-          <RadioGroup
-            value={theme}
-            onValueChange={setTheme}
-            className="grid grid-cols-1 sm:grid-cols-3 gap-4"
-          >
-            <div>
-              <RadioGroupItem value="light" id="light" className="peer sr-only" />
-              <Label
-                htmlFor="light"
-                className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary"
-              >
-                <div className="w-full h-12 rounded-md bg-white border border-gray-200 mb-2" />
-                Light
-              </Label>
-            </div>
-
-            <div>
-              <RadioGroupItem value="dark" id="dark" className="peer sr-only" />
-              <Label
-                htmlFor="dark"
-                className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary"
-              >
-                <div className="w-full h-12 rounded-md bg-slate-900 border border-slate-700 mb-2" />
-                Dark
-              </Label>
-            </div>
-
-            <div>
-              <RadioGroupItem value="system" id="system" className="peer sr-only" />
-              <Label
-                htmlFor="system"
-                className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary"
-              >
-                <div className="w-full h-12 rounded-md bg-gradient-to-r from-white to-slate-900 border border-gray-400 mb-2" />
-                System
-              </Label>
-            </div>
-          </RadioGroup>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Button
+              variant={theme === 'light' ? 'default' : 'outline'}
+              onClick={() => setTheme('light')}
+            >
+              <Sun className="mr-2 h-4 w-4" />
+              Light
+            </Button>
+            <Button
+              variant={theme === 'dark' ? 'default' : 'outline'}
+              onClick={() => setTheme('dark')}
+            >
+              <Moon className="mr-2 h-4 w-4" />
+              Dark
+            </Button>
+            <Button
+              variant={theme === 'system' ? 'default' : 'outline'}
+              onClick={() => setTheme('system')}
+            >
+              <Laptop className="mr-2 h-4 w-4" />
+              System
+            </Button>
+          </div>
         ) : (
            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Skeleton className="h-28 w-full" />
-            <Skeleton className="h-28 w-full" />
-            <Skeleton className="h-28 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
           </div>
         )}
       </CardContent>
