@@ -1,9 +1,9 @@
 import type { Booking, Revenue, Room, BookingStatus, RoomStatus, StaffMember, HotelConfig } from './types';
 
 export const dashboardMetrics = {
-  occupancyRate: 75.5,
-  totalRevenue: 42530.75,
-  newBookings: 12,
+  occupancyRate: 73.8,
+  totalRevenue: 42791.92,
+  newBookings: 13,
 };
 
 export const revenueData: Revenue[] = [
