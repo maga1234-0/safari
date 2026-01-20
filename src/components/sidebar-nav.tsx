@@ -21,6 +21,7 @@ import {
   Settings,
   CircleHelp,
   LogOut,
+  Compass,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -70,7 +71,7 @@ export function SidebarNav() {
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary rounded-lg" />
+          <Compass className="h-8 w-8 text-sidebar-primary" />
           <h1 className="text-xl font-semibold font-headline text-primary-foreground">
             Safari
           </h1>
