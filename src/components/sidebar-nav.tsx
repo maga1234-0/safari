@@ -79,24 +79,24 @@ export function SidebarNav() {
       <SidebarMenu>
         {menuItems.map((item) => (
           <SidebarMenuItem key={item.href}>
-            <Link href={item.href} asChild>
-              <SidebarMenuButton isActive={isActive(item.href)} tooltip={item.label}>
+            <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={item.label}>
+              <Link href={item.href}>
                 {item.icon}
                 <span>{item.label}</span>
-              </SidebarMenuButton>
-            </Link>
+              </Link>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         ))}
       </SidebarMenu>
       <SidebarFooter className="mt-auto">
         <SidebarMenu>
           <SidebarMenuItem>
-            <Link href="/settings" asChild>
-              <SidebarMenuButton isActive={isActive('/settings')} tooltip="Settings">
+            <SidebarMenuButton asChild isActive={isActive('/settings')} tooltip="Settings">
+              <Link href="/settings">
                 <Settings />
                 <span>Settings</span>
-              </SidebarMenuButton>
-            </Link>
+              </Link>
+            </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton tooltip="Logout">
