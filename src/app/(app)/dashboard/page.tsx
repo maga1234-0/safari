@@ -25,6 +25,7 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from 
 import { dashboardMetrics, revenueData, recentBookings, bookingStatusColors } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import { CircleDollarSign, Percent, CalendarPlus } from 'lucide-react';
+import { format } from 'date-fns';
 
 const chartConfig = {
   revenue: {
@@ -140,8 +141,8 @@ export default function Dashboard() {
                     </TableCell>
                     <TableCell>{booking.roomNumber}</TableCell>
                     <TableCell>
-                      {booking.checkIn.toLocaleDateString()} -{' '}
-                      {booking.checkOut.toLocaleDateString()}
+                      {format(booking.checkIn, 'MM/dd/yyyy')} -{' '}
+                      {format(booking.checkOut, 'MM/dd/yyyy')}
                     </TableCell>
                     <TableCell className="text-right">
                        <Badge
