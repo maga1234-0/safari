@@ -21,7 +21,7 @@ import {
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import type { Booking, BookingStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Edit, Trash, Calendar } from 'lucide-react';
+import { PlusCircle, Edit, Trash } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -40,14 +40,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { format, toDate } from 'date-fns';
-import { Calendar as CalendarPicker } from "@/components/ui/calendar"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
+import { format, toDate, parse } from 'date-fns';
 import { useCollection, useFirestore, useUser, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, doc, query, serverTimestamp } from 'firebase/firestore';
 
@@ -291,56 +284,26 @@ export default function ReservationsPage() {
               <Label htmlFor="checkIn" className="text-right">
                 Check-in
               </Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "col-span-3 justify-start text-left font-normal",
-                      !checkIn && "text-muted-foreground"
-                    )}
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {checkIn ? format(checkIn, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <CalendarPicker
-                    mode="single"
-                    selected={checkIn}
-                    onSelect={setCheckIn}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <Input
+                id="checkIn"
+                type="date"
+                value={checkIn ? format(checkIn, 'yyyy-MM-dd') : ''}
+                onChange={(e) => setCheckIn(e.target.value ? parse(e.target.value, 'yyyy-MM-dd', new Date()) : undefined)}
+                className="col-span-3"
+              />
             </div>
             
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="checkOut" className="text-right">
                 Check-out
               </Label>
-               <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "col-span-3 justify-start text-left font-normal",
-                      !checkOut && "text-muted-foreground"
-                    )}
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {checkOut ? format(checkOut, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <CalendarPicker
-                    mode="single"
-                    selected={checkOut}
-                    onSelect={setCheckOut}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <Input
+                id="checkOut"
+                type="date"
+                value={checkOut ? format(checkOut, 'yyyy-MM-dd') : ''}
+                onChange={(e) => setCheckOut(e.target.value ? parse(e.target.value, 'yyyy-MM-dd', new Date()) : undefined)}
+                className="col-span-3"
+              />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
