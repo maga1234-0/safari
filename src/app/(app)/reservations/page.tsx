@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   Card,
@@ -21,7 +21,7 @@ import {
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import type { Booking, BookingStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Edit, Trash } from 'lucide-react';
+import { PlusCircle, Edit, Trash, Search } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -82,6 +82,7 @@ export default function ReservationsPage() {
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [prefilled, setPrefilled] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Form state
   const [clientName, setClientName] = useState('');
@@ -194,14 +195,34 @@ export default function ReservationsPage() {
     });
   };
 
+  const filteredBookings = useMemo(() => {
+    if (!bookings) return [];
+    return bookings.filter(booking =>
+      booking.clientName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [bookings, searchTerm]);
+
+
   return (
     <div>
       <h1 className="text-3xl font-bold font-headline tracking-tight">Reservation Management</h1>
       <p className="text-muted-foreground">Create, modify, and cancel reservations.</p>
       <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>All Reservations</CardTitle>
-          <CardDescription>View and manage all guest reservations.</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>All Reservations</CardTitle>
+            <CardDescription>View and manage all guest reservations.</CardDescription>
+          </div>
+          <div className="relative w-full max-w-sm">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search by client name..."
+              className="w-full appearance-none bg-background pl-8 shadow-none"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -216,7 +237,7 @@ export default function ReservationsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {bookings?.map((booking) => (
+              {filteredBookings?.map((booking) => (
                 <TableRow key={booking.id}>
                   <TableCell className="font-medium">{booking.clientName}</TableCell>
                   <TableCell>{booking.roomNumber}</TableCell>
