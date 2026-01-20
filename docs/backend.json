@@ -1,0 +1,366 @@
+{
+  "entities": {
+    "Room": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Room",
+      "type": "object",
+      "description": "Represents a room in the hotel.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the room."
+        },
+        "roomNumber": {
+          "type": "string",
+          "description": "The room number or identifier."
+        },
+        "roomType": {
+          "type": "string",
+          "description": "Type of room (e.g., Single, Double, Suite)."
+        },
+        "status": {
+          "type": "string",
+          "description": "Current status of the room (e.g., Available, Occupied, Maintenance)."
+        },
+        "price": {
+          "type": "number",
+          "description": "Price per night for the room."
+        },
+        "amenities": {
+          "type": "array",
+          "description": "List of amenities available in the room.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "roomNumber",
+        "roomType",
+        "status",
+        "price"
+      ]
+    },
+    "Reservation": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Reservation",
+      "type": "object",
+      "description": "Represents a reservation made by a client.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the reservation."
+        },
+        "clientId": {
+          "type": "string",
+          "description": "Reference to Client. (Relationship: Client 1:N Reservation)"
+        },
+        "roomId": {
+          "type": "string",
+          "description": "Reference to Room. (Relationship: Room 1:N Reservation)"
+        },
+        "checkInDate": {
+          "type": "string",
+          "description": "Date and time of check-in.",
+          "format": "date-time"
+        },
+        "checkOutDate": {
+          "type": "string",
+          "description": "Date and time of check-out.",
+          "format": "date-time"
+        },
+        "numberOfGuests": {
+          "type": "number",
+          "description": "Number of guests for the reservation."
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "Total amount for the reservation."
+        },
+        "status": {
+          "type": "string",
+          "description": "The status of the reservation (e.g., Reserved, CheckedIn, CheckedOut, Cancelled)."
+        }
+      },
+      "required": [
+        "id",
+        "clientId",
+        "roomId",
+        "checkInDate",
+        "checkOutDate",
+        "numberOfGuests",
+        "totalAmount"
+      ]
+    },
+    "Client": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Client",
+      "type": "object",
+      "description": "Represents a client of the hotel.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the client."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "First name of the client."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Last name of the client."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the client.",
+          "format": "email"
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "Phone number of the client."
+        },
+        "address": {
+          "type": "string",
+          "description": "Address of the client."
+        },
+        "preferences": {
+          "type": "string",
+          "description": "Client preferences (e.g., room type, smoking/non-smoking)."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Any notes about the client."
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "email",
+        "phoneNumber"
+      ]
+    },
+    "Invoice": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Invoice",
+      "type": "object",
+      "description": "Represents an invoice for a reservation.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the invoice."
+        },
+        "reservationId": {
+          "type": "string",
+          "description": "Reference to Reservation. (Relationship: Reservation 1:1 Invoice)"
+        },
+        "invoiceDate": {
+          "type": "string",
+          "description": "Date the invoice was issued.",
+          "format": "date-time"
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "Date the invoice is due.",
+          "format": "date-time"
+        },
+        "amountDue": {
+          "type": "number",
+          "description": "Total amount due on the invoice."
+        },
+        "amountPaid": {
+          "type": "number",
+          "description": "Amount paid towards the invoice."
+        },
+        "paymentDate": {
+          "type": "string",
+          "description": "Date the payment was received.",
+          "format": "date-time"
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "Method of payment (e.g., Credit Card, Cash)."
+        }
+      },
+      "required": [
+        "id",
+        "reservationId",
+        "invoiceDate",
+        "dueDate",
+        "amountDue"
+      ]
+    },
+    "Staff": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Staff",
+      "type": "object",
+      "description": "Represents a staff member of the hotel.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the staff member."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "First name of the staff member."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Last name of the staff member."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the staff member.",
+          "format": "email"
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "Phone number of the staff member."
+        },
+        "role": {
+          "type": "string",
+          "description": "Role of the staff member (e.g., Manager, Receptionist)."
+        },
+        "permissions": {
+          "type": "array",
+          "description": "List of permissions granted to the staff member.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "email",
+        "phoneNumber",
+        "role"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/clients/{clientId}",
+        "definition": {
+          "entityName": "Client",
+          "schema": {
+            "$ref": "#/backend/entities/Client"
+          },
+          "description": "Stores client profiles.  Access is restricted to the client themselves (path-based ownership).",
+          "params": [
+            {
+              "name": "clientId",
+              "description": "The unique identifier for the client."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/rooms/{roomId}",
+        "definition": {
+          "entityName": "Room",
+          "schema": {
+            "$ref": "#/backend/entities/Room"
+          },
+          "description": "Stores room information. Access controlled via `roles_staff`.",
+          "params": [
+            {
+              "name": "roomId",
+              "description": "The unique identifier for the room."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/reservations/{reservationId}",
+        "definition": {
+          "entityName": "Reservation",
+          "schema": {
+            "$ref": "#/backend/entities/Reservation"
+          },
+          "description": "Stores reservation details. Includes denormalized 'clientId' and room details for authorization independence.",
+          "params": [
+            {
+              "name": "reservationId",
+              "description": "The unique identifier for the reservation."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/invoices/{invoiceId}",
+        "definition": {
+          "entityName": "Invoice",
+          "schema": {
+            "$ref": "#/backend/entities/Invoice"
+          },
+          "description": "Stores invoice information. Includes denormalized 'clientId' (from Reservation) for authorization independence.",
+          "params": [
+            {
+              "name": "invoiceId",
+              "description": "The unique identifier for the invoice."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/staff/{staffId}",
+        "definition": {
+          "entityName": "Staff",
+          "schema": {
+            "$ref": "#/backend/entities/Staff"
+          },
+          "description": "Stores staff member profiles.  Access controlled via `/roles_admin/{uid}`.",
+          "params": [
+            {
+              "name": "staffId",
+              "description": "The unique identifier for the staff member."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{uid}",
+        "definition": {
+          "entityName": "roles_admin",
+          "schema": {
+            "$ref": "#/backend/entities/Staff"
+          },
+          "description": "Indicates administrator role. Existence of document grants admin privileges.",
+          "params": [
+            {
+              "name": "uid",
+              "description": "The user ID of the administrator."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_staff/{uid}",
+        "definition": {
+          "entityName": "Staff",
+          "schema": {
+            "$ref": "#/backend/entities/Staff"
+          },
+          "description": "Indicates staff role. Existence of document grants staff privileges.",
+          "params": [
+            {
+              "name": "uid",
+              "description": "The user ID of the staff member."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to support the core features of the Safari Hotel Manager, focusing on room management, reservation handling, client profiles, billing, real-time dashboards, staff management, and potential AI-powered suggestions. The structure prioritizes security, scalability, and ease of use, particularly in environments with potentially unstable connections. It leverages denormalization to ensure authorization independence, facilitating simpler and more robust security rules.\n\n**Authorization Independence and QAPs:**\n\n*   **Clients:** Clients are stored directly under the `/clients/{clientId}` collection. This simplifies access control, as rules can directly check `request.auth.uid == clientId` for owner-based access.\n*   **Rooms:** Rooms are stored under `/rooms/{roomId}`.  Since room access is generally managed by staff, a separate `/roles_staff/{uid}` collection will be used to grant listing and modification permissions.\n*   **Reservations:** Reservations are stored under `/reservations/{reservationId}`.  Each reservation denormalizes the `clientId` and necessary room details (like `roomType`). This denormalization enables security rules to validate ownership and relationship to the client and the room.\n*   **Invoices:** Invoices are stored under `/invoices/{invoiceId}`. Invoices are linked to reservations via the `reservationId`. The `clientId` is denormalized from the reservation data into the invoice for authorization independence.\n*   **Staff:** Staff data is stored under `/staff/{staffId}`. A separate `/roles_staff/{uid}` is used to indicate staff membership.\n*   **Roles:** Global roles are managed using dedicated collections (`/roles_admin/{uid}`, `/roles_staff/{uid}`), providing existence-based access control and avoiding the need to read document content for role verification.\n\n**Denormalization Strategy:**\n\n*   **Reservations:**  The `clientId` is denormalized into the reservation document. This ensures that security rules can validate that a user is only accessing reservations associated with their own client ID without needing to perform a `get()` operation. Additionally, relevant room details (e.g., `roomType`, `price`) are denormalized to support accurate billing information even if room details change over time.\n*   **Invoices:**  The `clientId` (copied from the associated `Reservation`) is denormalized into the invoice. This makes it possible to determine that the authenticated user can only access their own invoice without needing to call the database.\n\n**Structural Segregation:**\n\nThe data is segregated into separate collections based on entity type (clients, rooms, reservations, invoices, staff, and roles). This ensures that each collection has a homogenous security posture, simplifying the application of security rules.\n\n**Access Modeling:**\n\n*   **Private Data:** Client profiles (`/clients/{clientId}`) are secured using path-based ownership.\n*   **Collaborative Data:**  Staff roles and permissions are handled via the `/roles_admin/{uid}` and `/roles_staff/{uid}` collections, implementing a presence-based role assignment strategy. Reservations and invoices provide authorization independence via client ID denormalization."
+  }
+}
