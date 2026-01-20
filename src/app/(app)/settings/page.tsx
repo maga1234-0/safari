@@ -1,5 +1,4 @@
 import { ProfileSettings } from "@/components/profile-settings";
-import { StaffManagement } from "@/components/staff-management";
 import { HotelConfiguration } from "@/components/hotel-configuration";
 
 export default function SettingsPage() {
@@ -9,7 +8,6 @@ export default function SettingsPage() {
       <p className="text-muted-foreground">Manage your application and account settings.</p>
       <div className="mt-6 grid gap-6">
         <ProfileSettings />
-        <StaffManagement />
         <HotelConfiguration />
       </div>
     </div>

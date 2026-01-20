@@ -7,9 +7,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  SidebarMenuSub,
-  SidebarMenuSubItem,
-  SidebarMenuSubButton,
 } from '@/components/ui/sidebar';
 import {
   LayoutDashboard,
@@ -19,13 +16,12 @@ import {
   CreditCard,
   Bot,
   Settings,
-  CircleHelp,
   LogOut,
   Compass,
+  UserCog,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Button } from './ui/button';
 
 export function SidebarNav() {
   const pathname = usePathname();
@@ -59,6 +55,11 @@ export function SidebarNav() {
       href: '/clients',
       icon: <Users />,
       label: 'Clients',
+    },
+    {
+      href: '/staff',
+      icon: <UserCog />,
+      label: 'Staff',
     },
     {
       href: '/billing',
