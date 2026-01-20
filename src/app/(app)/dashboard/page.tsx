@@ -23,11 +23,10 @@ import {
   ChartConfig,
 } from '@/components/ui/chart';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { revenueData } from '@/lib/data';
 import type { Booking, BookingStatus, Room } from '@/lib/types';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { CircleDollarSign, Percent, CalendarPlus, Loader2 } from 'lucide-react';
-import { format, differenceInDays, isToday, startOfDay, toDate } from 'date-fns';
+import { format, differenceInDays, isToday, startOfDay, toDate, subMonths, startOfMonth } from 'date-fns';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
 
@@ -116,6 +115,48 @@ export default function Dashboard() {
         .slice(0, 5);
   }, [bookings]);
 
+  const monthlyRevenueData = useMemo(() => {
+    if (!bookings || !rooms) {
+      return [];
+    }
+
+    const sixMonthsAgo = subMonths(new Date(), 5);
+    const monthLabels = Array.from({ length: 6 }, (_, i) => {
+        const monthDate = subMonths(new Date(), 5 - i);
+        return format(monthDate, 'MMM');
+    });
+    
+    const monthlyTotals = monthLabels.reduce((acc, month) => {
+      acc[month] = 0;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const revenueBookings = bookings.filter(b => 
+        ['Confirmed', 'CheckedIn', 'CheckedOut'].includes(b.status)
+    );
+
+    revenueBookings.forEach(booking => {
+      const checkInDate = toDateSafe(booking.checkIn);
+      
+      if (checkInDate >= startOfMonth(sixMonthsAgo)) {
+        const month = format(checkInDate, 'MMM');
+        const nights = differenceInDays(toDateSafe(booking.checkOut), toDateSafe(booking.checkIn));
+        const nightsCount = nights > 0 ? nights : 1;
+        const price = booking.pricePerNight ?? rooms.find(r => r.id === booking.roomId)?.price ?? 0;
+        const bookingRevenue = price * nightsCount;
+        
+        if (monthlyTotals.hasOwnProperty(month)) {
+          monthlyTotals[month] += bookingRevenue;
+        }
+      }
+    });
+
+    return monthLabels.map(month => ({
+      month,
+      revenue: monthlyTotals[month],
+    }));
+  }, [bookings, rooms]);
+
   if (bookingsLoading || roomsLoading) {
     return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>
   }
@@ -180,7 +221,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                <BarChart accessibilityLayer data={revenueData}>
+                <BarChart accessibilityLayer data={monthlyRevenueData}>
                     <CartesianGrid vertical={false} />
                     <XAxis
                     dataKey="month"
