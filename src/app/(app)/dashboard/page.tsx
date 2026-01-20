@@ -147,12 +147,7 @@ export default function Dashboard() {
                        <Badge
                         className="text-white"
                         style={{
-                          backgroundColor:
-                            booking.status === 'Confirmed'
-                              ? 'hsl(var(--primary))'
-                              : booking.status === 'Pending'
-                              ? 'hsl(var(--accent))'
-                              : 'hsl(var(--destructive))',
+                          backgroundColor: bookingStatusColors[booking.status],
                         }}
                       >
                         {booking.status}

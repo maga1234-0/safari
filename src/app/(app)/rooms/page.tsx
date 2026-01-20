@@ -1,4 +1,20 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { rooms, roomStatusColors } from '@/lib/data';
 
 export default function RoomsPage() {
   return (
@@ -7,11 +23,39 @@ export default function RoomsPage() {
       <p className="text-muted-foreground">Track room availability, status, and details.</p>
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Coming Soon</CardTitle>
-          <CardDescription>This section is under construction.</CardDescription>
+          <CardTitle>All Rooms</CardTitle>
+          <CardDescription>View and manage all rooms in the hotel.</CardDescription>
         </CardHeader>
         <CardContent>
-          <p>The full room management interface will be available here, allowing you to view and update room statuses (available, occupied, maintenance), manage room types, and set pricing.</p>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Room No.</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Price</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rooms.map((room) => (
+                <TableRow key={room.id}>
+                  <TableCell className="font-medium">{room.roomNumber}</TableCell>
+                  <TableCell>{room.type}</TableCell>
+                  <TableCell>
+                    <Badge
+                      className="text-white"
+                      style={{
+                        backgroundColor: roomStatusColors[room.status],
+                      }}
+                    >
+                      {room.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">${room.price.toFixed(2)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>

@@ -1,4 +1,4 @@
-import type { Booking, Revenue } from './types';
+import type { Booking, Revenue, Room, BookingStatus, RoomStatus } from './types';
 
 export const dashboardMetrics = {
   occupancyRate: 75.5,
@@ -23,8 +23,25 @@ export const recentBookings: Booking[] = [
   { id: 'BK005', clientName: 'Chidinma Okoro', roomNumber: 210, checkIn: new Date('2024-08-15'), checkOut: new Date('2024-08-20'), status: 'Cancelled' },
 ];
 
-export const bookingStatusColors = {
-  'Confirmed': 'bg-green-500',
-  'Pending': 'bg-yellow-500',
-  'Cancelled': 'bg-red-500',
+export const bookingStatusColors: Record<BookingStatus, string> = {
+  'Confirmed': 'hsl(var(--primary))',
+  'Pending': 'hsl(var(--accent))',
+  'Cancelled': 'hsl(var(--destructive))',
+};
+
+export const rooms: Room[] = [
+    { id: 'R101', roomNumber: 101, type: 'Single', status: 'Available', price: 120 },
+    { id: 'R102', roomNumber: 102, type: 'Double', status: 'Occupied', price: 180 },
+    { id: 'R103', roomNumber: 103, type: 'Single', status: 'Available', price: 125 },
+    { id: 'R104', roomNumber: 104, type: 'Suite', status: 'Maintenance', price: 350 },
+    { id: 'R201', roomNumber: 201, type: 'Double', status: 'Available', price: 190 },
+    { id: 'R202', roomNumber: 202, type: 'Suite', status: 'Occupied', price: 400 },
+    { id: 'R203', roomNumber: 203, type: 'Double', status: 'Available', price: 195 },
+    { id: 'R301', roomNumber: 301, type: 'Single', status: 'Maintenance', price: 110 },
+];
+
+export const roomStatusColors: Record<RoomStatus, string> = {
+  'Available': 'hsl(var(--primary))',
+  'Occupied': 'hsl(var(--accent))',
+  'Maintenance': 'hsl(var(--destructive))',
 };
