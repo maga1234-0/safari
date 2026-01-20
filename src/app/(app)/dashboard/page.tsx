@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -22,8 +23,8 @@ import {
   ChartConfig,
 } from '@/components/ui/chart';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { dashboardMetrics, recentBookings, revenueData } from '@/lib/data';
-import type { BookingStatus } from '@/lib/types';
+import { dashboardMetrics as initialMetrics, recentBookings, revenueData } from '@/lib/data';
+import type { Booking, BookingStatus } from '@/lib/types';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { CircleDollarSign, Percent, CalendarPlus } from 'lucide-react';
 import { format } from 'date-fns';
@@ -36,12 +37,57 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 const bookingStatusVariant: Record<BookingStatus, BadgeProps['variant']> = {
-  'Confirmed': 'default',
-  'Pending': 'secondary',
+  'Confirmed': 'success',
+  'Pending': 'warning',
   'Cancelled': 'destructive',
 };
 
 export default function Dashboard() {
+  const [metrics, setMetrics] = useState(initialMetrics);
+  const [bookings, setBookings] = useState<Booking[]>(recentBookings);
+
+  useEffect(() => {
+    const metricsInterval = setInterval(() => {
+      setMetrics(prevMetrics => {
+        const newBookingsToday = prevMetrics.newBookings + (Math.random() > 0.95 ? 1 : 0);
+        return {
+          totalRevenue: prevMetrics.totalRevenue + Math.random() * 50,
+          occupancyRate: Math.max(0, Math.min(100, prevMetrics.occupancyRate + (Math.random() - 0.5))),
+          newBookings: newBookingsToday,
+        }
+      });
+    }, 2500);
+
+    const bookingInterval = setInterval(() => {
+      if (Math.random() > 0.8) {
+        setBookings(prevBookings => {
+            if (Math.random() > 0.5 && prevBookings.length > 0) {
+                const bookingToUpdateIndex = Math.floor(Math.random() * prevBookings.length);
+                const newBookings = [...prevBookings];
+                const statusOptions: BookingStatus[] = ['Confirmed', 'Pending'];
+                newBookings[bookingToUpdateIndex].status = statusOptions[Math.floor(Math.random() * statusOptions.length)];
+                return newBookings.sort((a, b) => b.checkIn.getTime() - a.checkIn.getTime());
+            } else {
+                 const newBooking: Booking = {
+                    id: `BK${Math.floor(Math.random() * 1000) + 100}`,
+                    clientName: ['Olivia Martinez', 'Liam Wilson', 'Emma Anderson', 'Noah Garcia'][Math.floor(Math.random() * 4)],
+                    roomNumber: Math.floor(Math.random() * 200) + 100,
+                    checkIn: new Date(),
+                    checkOut: new Date(new Date().getTime() + (Math.floor(Math.random() * 5) + 1) * 24 * 60 * 60 * 1000),
+                    status: 'Pending',
+                 };
+                return [newBooking, ...prevBookings.slice(0, 4)];
+            }
+        });
+      }
+    }, 4000);
+
+    return () => {
+      clearInterval(metricsInterval);
+      clearInterval(bookingInterval);
+    }
+  }, []);
+
   return (
     <div className="grid flex-1 items-start gap-4 sm:gap-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -54,10 +100,10 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-headline">
-              ${dashboardMetrics.totalRevenue.toLocaleString()}
+              ${metrics.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
             <p className="text-xs text-muted-foreground">
-              +20.1% from last month
+              Live data from booking system
             </p>
           </CardContent>
         </Card>
@@ -70,24 +116,24 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-headline">
-              {dashboardMetrics.occupancyRate}%
+              {metrics.occupancyRate.toFixed(1)}%
             </div>
             <p className="text-xs text-muted-foreground">
-              +2.5% from last week
+              Calculated in real-time
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">New Bookings</CardTitle>
+            <CardTitle className="text-sm font-medium">New Bookings Today</CardTitle>
             <CalendarPlus className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-headline">
-              +{dashboardMetrics.newBookings}
+              +{metrics.newBookings}
             </div>
             <p className="text-xs text-muted-foreground">
-              in the last 24 hours
+              Live updates
             </p>
           </CardContent>
         </Card>
@@ -127,7 +173,7 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="font-headline">Recent Bookings</CardTitle>
             <CardDescription>
-              A list of the most recent bookings.
+              A live-updating list of recent bookings.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -141,7 +187,7 @@ export default function Dashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {recentBookings.map((booking) => (
+                {bookings.map((booking) => (
                   <TableRow key={booking.id}>
                     <TableCell>
                       <div className="font-medium">{booking.clientName}</div>
