@@ -1,13 +1,17 @@
+import type { Timestamp } from 'firebase/firestore';
+
 export type BookingStatus = 'Confirmed' | 'Pending' | 'Cancelled';
 
 export type Booking = {
   id: string;
+  clientId: string;
   clientName: string;
+  roomId: string;
   roomNumber: number;
-  checkIn: Date;
-  checkOut: Date;
+  checkIn: Date | Timestamp;
+  checkOut: Date | Timestamp;
   status: BookingStatus;
-  createdAt: Date;
+  createdAt: Date | Timestamp;
 };
 
 export type Revenue = {

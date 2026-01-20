@@ -18,7 +18,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { staffMembers } from '@/lib/data';
 import type { StaffMember, StaffRole } from '@/lib/types';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { PlusCircle, Edit, Trash } from 'lucide-react';
@@ -40,6 +39,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { collection, doc, query } from 'firebase/firestore';
 
 const roleVariant: Record<StaffRole, BadgeProps['variant']> = {
   'Admin': 'destructive',
@@ -49,7 +50,13 @@ const roleVariant: Record<StaffRole, BadgeProps['variant']> = {
 
 export default function StaffPage() {
   const { toast } = useToast();
-  const [staff, setStaff] = useState<StaffMember[]>(staffMembers);
+  const firestore = useFirestore();
+  const staffQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'staff'));
+  }, [firestore]);
+  const { data: staff } = useCollection<StaffMember>(staffQuery);
+  
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
@@ -75,6 +82,14 @@ export default function StaffPage() {
     setRole(staffMember.role);
     setDialogOpen(true);
   };
+  
+  const handleDelete = (staffId: string) => {
+    deleteDocumentNonBlocking(doc(firestore, 'staff', staffId));
+    toast({
+      title: 'Staff Member Deleted',
+      description: 'The staff member has been removed.',
+    });
+  };
 
   const handleSave = () => {
     if (!name || !email || !role) {
@@ -85,25 +100,17 @@ export default function StaffPage() {
       });
       return;
     }
+    
+    const staffData = { name, email, role: role as StaffRole };
 
     if (dialogMode === 'add') {
-      const newStaffMember: StaffMember = {
-        id: `S${(staff.length + 10).toString().padStart(3, '0')}`, // Use a more robust ID in a real app
-        name,
-        email,
-        role: role as StaffRole,
-      };
-      setStaff([...staff, newStaffMember]);
+      addDocumentNonBlocking(collection(firestore, 'staff'), staffData);
       toast({
         title: 'Staff Member Added',
         description: `${name} has been added to the staff list.`,
       });
     } else if (dialogMode === 'edit' && selectedStaff) {
-      setStaff(staff.map(member => 
-        member.id === selectedStaff.id 
-        ? { ...member, name, email, role: role as StaffRole } 
-        : member
-      ));
+      updateDocumentNonBlocking(doc(firestore, 'staff', selectedStaff.id), staffData);
       toast({
         title: 'Staff Member Updated',
         description: `${name}'s information has been updated.`,
@@ -133,7 +140,7 @@ export default function StaffPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {staff.map((staffMember) => (
+              {staff?.map((staffMember) => (
                 <TableRow key={staffMember.id}>
                   <TableCell className="font-medium">{staffMember.name}</TableCell>
                   <TableCell>{staffMember.email}</TableCell>
@@ -144,7 +151,7 @@ export default function StaffPage() {
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(staffMember)}>
                           <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(staffMember.id)}>
                           <Trash className="h-4 w-4" />
                       </Button>
                   </TableCell>

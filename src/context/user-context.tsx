@@ -1,6 +1,7 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { useUser as useFirebaseAuthUser } from '@/firebase';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 interface UserContextType {
@@ -15,8 +16,16 @@ const userAvatarPlaceholder = PlaceHolderImages.find(p => p.id === 'user-avatar-
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
+  const { user } = useFirebaseAuthUser();
   const [avatar, setAvatar] = useState<string>(userAvatarPlaceholder?.imageUrl || '');
   const [name, setName] = useState<string>('Admin');
+
+  useEffect(() => {
+    if (user) {
+      setName(user.displayName || 'Admin');
+      setAvatar(user.photoURL || userAvatarPlaceholder?.imageUrl || '');
+    }
+  }, [user]);
 
   return (
     <UserContext.Provider value={{ avatar, setAvatar, name, setName }}>

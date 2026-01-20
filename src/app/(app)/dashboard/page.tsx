@@ -23,12 +23,13 @@ import {
   ChartConfig,
 } from '@/components/ui/chart';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { revenueData as initialRevenueData, rooms } from '@/lib/data';
-import type { BookingStatus } from '@/lib/types';
+import { revenueData } from '@/lib/data';
+import type { Booking, BookingStatus, Room } from '@/lib/types';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
-import { CircleDollarSign, Percent, CalendarPlus } from 'lucide-react';
-import { format, differenceInDays, isToday, startOfDay } from 'date-fns';
-import { useBookings } from '@/context/bookings-context';
+import { CircleDollarSign, Percent, CalendarPlus, Loader2 } from 'lucide-react';
+import { format, differenceInDays, isToday, startOfDay, toDate } from 'date-fns';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query } from 'firebase/firestore';
 
 const chartConfig = {
   revenue: {
@@ -43,17 +44,39 @@ const bookingStatusVariant: Record<BookingStatus, BadgeProps['variant']> = {
   'Cancelled': 'destructive',
 };
 
+function toDateSafe(date: any): Date {
+  if (date && typeof date.toDate === 'function') {
+    return date.toDate();
+  }
+  return toDate(date);
+}
+
 export default function Dashboard() {
-  const { bookings } = useBookings();
-  const revenueData = initialRevenueData;
+  const firestore = useFirestore();
+  
+  const bookingsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'reservations'));
+  }, [firestore]);
+  const { data: bookings, isLoading: bookingsLoading } = useCollection<Booking>(bookingsQuery);
+
+  const roomsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'rooms'));
+  }, [firestore]);
+  const { data: rooms, isLoading: roomsLoading } = useCollection<Room>(roomsQuery);
 
   const metrics = useMemo(() => {
+    if (!bookings || !rooms) {
+      return { totalRevenue: 0, occupancyRate: 0, newBookings: 0 };
+    }
+
     const confirmedBookings = bookings.filter(b => b.status === 'Confirmed');
 
     const totalRevenue = confirmedBookings.reduce((acc, booking) => {
-      const room = rooms.find(r => r.roomNumber === booking.roomNumber);
+      const room = rooms.find(r => r.id === booking.roomId);
       if (room) {
-        const nights = differenceInDays(booking.checkOut, booking.checkIn);
+        const nights = differenceInDays(toDateSafe(booking.checkOut), toDateSafe(booking.checkIn));
         return acc + room.price * (nights > 0 ? nights : 1);
       }
       return acc;
@@ -63,8 +86,8 @@ export default function Dashboard() {
     const occupiedRooms = new Set(
       confirmedBookings
         .filter(b => {
-            const checkIn = startOfDay(b.checkIn);
-            const checkOut = startOfDay(b.checkOut);
+            const checkIn = startOfDay(toDateSafe(b.checkIn));
+            const checkOut = startOfDay(toDateSafe(b.checkOut));
             return today >= checkIn && today < checkOut;
         })
         .map(b => b.roomNumber)
@@ -72,20 +95,25 @@ export default function Dashboard() {
 
     const occupancyRate = rooms.length > 0 ? (occupiedRooms.size / rooms.length) * 100 : 0;
     
-    const newBookings = bookings.filter(b => isToday(b.createdAt)).length;
+    const newBookings = bookings.filter(b => isToday(toDateSafe(b.createdAt))).length;
 
     return {
       totalRevenue,
       occupancyRate,
       newBookings,
     };
-  }, [bookings]);
+  }, [bookings, rooms]);
 
   const recentBookings = useMemo(() => {
+    if (!bookings) return [];
     return [...bookings]
-        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .sort((a, b) => toDateSafe(b.createdAt).getTime() - toDateSafe(a.createdAt).getTime())
         .slice(0, 5);
   }, [bookings]);
+
+  if (bookingsLoading || roomsLoading) {
+    return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>
+  }
 
   return (
     <div className="grid flex-1 items-start gap-4 sm:gap-6">
@@ -193,8 +221,8 @@ export default function Dashboard() {
                     </TableCell>
                     <TableCell>{booking.roomNumber}</TableCell>
                     <TableCell>
-                      {format(booking.checkIn, 'MM/dd/yyyy')} -{' '}
-                      {format(booking.checkOut, 'MM/dd/yyyy')}
+                      {format(toDateSafe(booking.checkIn), 'MM/dd/yyyy')} -{' '}
+                      {format(toDateSafe(booking.checkOut), 'MM/dd/yyyy')}
                     </TableCell>
                     <TableCell className="text-right">
                        <Badge variant={bookingStatusVariant[booking.status]}>

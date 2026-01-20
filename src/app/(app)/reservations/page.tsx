@@ -39,7 +39,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
+import { format, toDate } from 'date-fns';
 import { Calendar as CalendarPicker } from "@/components/ui/calendar"
 import {
   Popover,
@@ -47,7 +47,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
-import { useBookings } from '@/context/bookings-context';
+import { useCollection, useFirestore, useUser, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { collection, doc, query, serverTimestamp } from 'firebase/firestore';
 
 const bookingStatusVariant: Record<BookingStatus, BadgeProps['variant']> = {
   'Confirmed': 'success',
@@ -55,16 +56,37 @@ const bookingStatusVariant: Record<BookingStatus, BadgeProps['variant']> = {
   'Cancelled': 'destructive',
 };
 
+function toDateSafe(date: any): Date {
+  if (date && typeof date.toDate === 'function') {
+    return date.toDate();
+  }
+  return toDate(date);
+}
+
 export default function ReservationsPage() {
   const { toast } = useToast();
-  const { bookings, addBooking, updateBooking, deleteBooking } = useBookings();
+  const firestore = useFirestore();
+  const { user } = useUser();
+  
+  const bookingsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'reservations'));
+  }, [firestore]);
+  const { data: bookings } = useCollection<Booking>(bookingsQuery);
+
+  const roomsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'rooms'));
+  }, [firestore]);
+  const { data: rooms } = useCollection<any>(roomsQuery);
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
   // Form state
   const [clientName, setClientName] = useState('');
-  const [roomNumber, setRoomNumber] = useState('');
+  const [roomId, setRoomId] = useState('');
   const [checkIn, setCheckIn] = useState<Date | undefined>();
   const [checkOut, setCheckOut] = useState<Date | undefined>();
   const [status, setStatus] = useState<BookingStatus | ''>('');
@@ -73,7 +95,7 @@ export default function ReservationsPage() {
     setDialogMode('add');
     setSelectedBooking(null);
     setClientName('');
-    setRoomNumber('');
+    setRoomId('');
     setCheckIn(undefined);
     setCheckOut(undefined);
     setStatus('');
@@ -84,15 +106,15 @@ export default function ReservationsPage() {
     setDialogMode('edit');
     setSelectedBooking(booking);
     setClientName(booking.clientName);
-    setRoomNumber(String(booking.roomNumber));
-    setCheckIn(booking.checkIn);
-    setCheckOut(booking.checkOut);
+    setRoomId(booking.roomId);
+    setCheckIn(toDateSafe(booking.checkIn));
+    setCheckOut(toDateSafe(booking.checkOut));
     setStatus(booking.status);
     setDialogOpen(true);
   };
 
   const handleSave = () => {
-    if (!clientName || !roomNumber || !checkIn || !checkOut || !status) {
+    if (!clientName || !roomId || !checkIn || !checkOut || !status || !user) {
       toast({
         variant: 'destructive',
         title: 'Missing Information',
@@ -101,37 +123,43 @@ export default function ReservationsPage() {
       return;
     }
     
-    const roomNumberValue = parseInt(roomNumber, 10);
-    if (isNaN(roomNumberValue)) {
+    const selectedRoom = rooms?.find(r => r.id === roomId);
+    if (!selectedRoom) {
         toast({
             variant: 'destructive',
-            title: 'Invalid Input',
-            description: 'Room number must be a valid number.',
+            title: 'Invalid Room',
+            description: 'The selected room does not exist.',
         });
         return;
     }
 
     if (dialogMode === 'add') {
-      addBooking({
+      const newBooking = {
+        clientId: user.uid,
         clientName,
-        roomNumber: roomNumberValue,
+        roomId,
+        roomNumber: selectedRoom.roomNumber,
         checkIn,
         checkOut,
         status: status as BookingStatus,
-      });
+        createdAt: serverTimestamp(),
+      };
+      addDocumentNonBlocking(collection(firestore, 'reservations'), newBooking);
       toast({
         title: 'Reservation Added',
         description: `Booking for ${clientName} has been created.`,
       });
     } else if (dialogMode === 'edit' && selectedBooking) {
-      updateBooking({ 
+      const updatedBooking = { 
         ...selectedBooking, 
         clientName, 
-        roomNumber: roomNumberValue, 
+        roomId,
+        roomNumber: selectedRoom.roomNumber,
         checkIn, 
         checkOut, 
         status: status as BookingStatus 
-      });
+      };
+      updateDocumentNonBlocking(doc(firestore, 'reservations', selectedBooking.id), updatedBooking);
       toast({
         title: 'Reservation Updated',
         description: `Booking for ${clientName} has been updated.`,
@@ -142,7 +170,7 @@ export default function ReservationsPage() {
   };
 
   const handleDelete = (bookingId: string) => {
-    deleteBooking(bookingId);
+    deleteDocumentNonBlocking(doc(firestore, 'reservations', bookingId));
     toast({
       title: 'Reservation Deleted',
       description: 'The booking has been removed.',
@@ -171,12 +199,12 @@ export default function ReservationsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {bookings.map((booking) => (
+              {bookings?.map((booking) => (
                 <TableRow key={booking.id}>
                   <TableCell className="font-medium">{booking.clientName}</TableCell>
                   <TableCell>{booking.roomNumber}</TableCell>
-                  <TableCell>{format(booking.checkIn, 'MM/dd/yyyy')}</TableCell>
-                  <TableCell>{format(booking.checkOut, 'MM/dd/yyyy')}</TableCell>
+                  <TableCell>{format(toDateSafe(booking.checkIn), 'MM/dd/yyyy')}</TableCell>
+                  <TableCell>{format(toDateSafe(booking.checkOut), 'MM/dd/yyyy')}</TableCell>
                   <TableCell>
                     <Badge variant={bookingStatusVariant[booking.status]}>
                       {booking.status}
@@ -219,9 +247,20 @@ export default function ReservationsPage() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="roomNumber" className="text-right">
-                Room No.
+                Room
               </Label>
-              <Input id="roomNumber" value={roomNumber} onChange={(e) => setRoomNumber(e.target.value)} type="number" placeholder="e.g. 101" className="col-span-3" />
+              <Select value={roomId} onValueChange={setRoomId}>
+                  <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Select a room" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {rooms?.map(room => (
+                        <SelectItem key={room.id} value={room.id}>
+                          Room {room.roomNumber} ({room.type})
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+              </Select>
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">

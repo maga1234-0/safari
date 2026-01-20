@@ -19,19 +19,23 @@ import {
   Compass,
   UserCog,
   Building,
+  Settings,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '@/firebase';
 
 export function SidebarNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const auth = useAuth();
 
   const isActive = (path: string) => {
     return pathname === path;
   };
 
   const handleLogout = () => {
+    auth.signOut();
     router.push('/login');
   };
 
@@ -102,6 +106,14 @@ export function SidebarNav() {
       </SidebarMenu>
       <SidebarFooter className="mt-auto">
         <SidebarMenu>
+           <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/settings')} tooltip="Settings">
+              <Link href="/settings">
+                <Settings />
+                <span>Settings</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleLogout} tooltip="Logout">
               <LogOut />

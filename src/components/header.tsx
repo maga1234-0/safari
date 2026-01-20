@@ -5,8 +5,10 @@ import { useTheme } from "next-themes";
 import { useRouter } from 'next/navigation';
 import {
   Bell,
+  LogOut,
   Moon,
   Sun,
+  User,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -21,13 +23,16 @@ import {
 import { SidebarTrigger } from './ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Skeleton } from './ui/skeleton';
-import { useUser } from '@/context/user-context';
+import { useUser as useAppUser } from '@/context/user-context';
+import { useAuth, useUser as useFirebaseAuthUser } from '@/firebase';
 
 export function Header() {
   const [isMounted, setIsMounted] = React.useState(false);
-  const { avatar, name } = useUser();
+  const { avatar, name } = useAppUser();
   const { resolvedTheme, setTheme } = useTheme();
   const router = useRouter();
+  const auth = useAuth();
+  const { user: firebaseUser } = useFirebaseAuthUser();
 
 
   React.useEffect(() => {
@@ -35,8 +40,14 @@ export function Header() {
   }, []);
 
   const handleLogout = () => {
+    auth.signOut();
     router.push('/login');
   };
+  
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return '';
+    return name.split(' ').map(n => n[0]).join('').substring(0, 2);
+  }
 
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
@@ -62,23 +73,28 @@ export function Header() {
         <span className="sr-only">Toggle notifications</span>
       </Button>
       
-      {isMounted ? (
+      {isMounted && firebaseUser ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-full">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={avatar} alt="User avatar" />
-                <AvatarFallback>{name.charAt(0)}</AvatarFallback>
+                <AvatarImage src={firebaseUser.photoURL || avatar} alt="User avatar" />
+                <AvatarFallback>{getInitials(firebaseUser.displayName || name)}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>{name} Account</DropdownMenuLabel>
+            <DropdownMenuLabel>{firebaseUser.displayName || name} Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push('/settings')}>Settings</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push('/dashboard')}>Support</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push('/settings')}>
+              <User className="mr-2" />
+              Settings
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
+              <LogOut className="mr-2" />
+              Logout
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (

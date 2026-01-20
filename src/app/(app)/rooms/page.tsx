@@ -18,7 +18,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
-import { rooms as initialRooms } from '@/lib/data';
 import type { Room, RoomStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Edit, Trash, Search } from 'lucide-react';
@@ -40,6 +39,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { collection, doc, query } from 'firebase/firestore';
 
 const roomStatusVariant: Record<RoomStatus, BadgeProps['variant']> = {
   'Available': 'success',
@@ -49,7 +50,14 @@ const roomStatusVariant: Record<RoomStatus, BadgeProps['variant']> = {
 
 export default function RoomsPage() {
   const { toast } = useToast();
-  const [rooms, setRooms] = useState<Room[]>(initialRooms);
+  const firestore = useFirestore();
+  
+  const roomsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'rooms'));
+  }, [firestore]);
+  const { data: rooms } = useCollection<Room>(roomsQuery);
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
@@ -79,6 +87,14 @@ export default function RoomsPage() {
     setPrice(String(room.price));
     setDialogOpen(true);
   };
+  
+  const handleDelete = (roomId: string) => {
+    deleteDocumentNonBlocking(doc(firestore, 'rooms', roomId));
+    toast({
+      title: 'Room Deleted',
+      description: 'The room has been removed.',
+    });
+  };
 
   const handleSave = () => {
     if (!roomNumber || !type || !status || !price) {
@@ -101,26 +117,22 @@ export default function RoomsPage() {
         });
         return;
     }
-
-    if (dialogMode === 'add') {
-      const newRoom: Room = {
-        id: `R${Math.floor(Math.random() * 1000) + 400}`, // In a real app, use a better ID generation
+    
+    const roomData = {
         roomNumber: roomNumberValue,
         type: type as Room['type'],
         status: status as RoomStatus,
         price: priceValue,
-      };
-      setRooms([...rooms, newRoom]);
+    };
+
+    if (dialogMode === 'add') {
+      addDocumentNonBlocking(collection(firestore, 'rooms'), roomData);
       toast({
         title: 'Room Added',
-        description: `Room ${newRoom.roomNumber} has been added.`,
+        description: `Room ${roomNumberValue} has been added.`,
       });
     } else if (dialogMode === 'edit' && selectedRoom) {
-      setRooms(rooms.map(r =>
-        r.id === selectedRoom.id
-        ? { ...r, roomNumber: roomNumberValue, type: type as Room['type'], status: status as RoomStatus, price: priceValue }
-        : r
-      ));
+      updateDocumentNonBlocking(doc(firestore, 'rooms', selectedRoom.id), roomData);
       toast({
         title: 'Room Updated',
         description: `Room ${roomNumber}'s information has been updated.`,
@@ -130,7 +142,7 @@ export default function RoomsPage() {
     setDialogOpen(false);
   };
   
-  const filteredRooms = rooms.filter(room =>
+  const filteredRooms = rooms?.filter(room =>
     room.roomNumber.toString().includes(searchTerm) ||
     room.type.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -168,7 +180,7 @@ export default function RoomsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredRooms.map((room) => (
+              {filteredRooms?.map((room) => (
                 <TableRow key={room.id}>
                   <TableCell className="font-medium">{room.roomNumber}</TableCell>
                   <TableCell>{room.type}</TableCell>
@@ -182,7 +194,7 @@ export default function RoomsPage() {
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(room)}>
                         <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(room.id)}>
                         <Trash className="h-4 w-4" />
                     </Button>
                   </TableCell>

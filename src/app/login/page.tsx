@@ -1,26 +1,58 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Compass, Eye, EyeOff } from "lucide-react";
+import { Compass, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAuth, useUser, initiateEmailSignIn } from "@/firebase";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+  const { toast } = useToast();
 
-  const handleLogin = () => {
-    // In a real app, you'd have authentication logic here.
-    // For now, we'll just redirect to the dashboard.
-    router.push('/dashboard');
+  const [email, setEmail] = useState("admin@safari.com");
+  const [password, setPassword] = useState("password");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, isUserLoading, router]);
+
+  const handleLogin = async () => {
+    setIsLoggingIn(true);
+    try {
+      await initiateEmailSignIn(auth, email, password);
+      // onAuthStateChanged will handle the redirect
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: error.message || "An unknown error occurred.",
+      });
+      setIsLoggingIn(false);
+    }
   };
   
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+
+  if (isUserLoading || user) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
@@ -41,7 +73,8 @@ export default function LoginPage() {
                 type="email"
                 placeholder="m@example.com"
                 required
-                defaultValue="admin@safari.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
@@ -53,7 +86,8 @@ export default function LoginPage() {
                   id="password" 
                   type={showPassword ? "text" : "password"}
                   required 
-                  defaultValue="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="pr-10"
                 />
                 <Button
@@ -72,8 +106,9 @@ export default function LoginPage() {
                 </Button>
               </div>
             </div>
-            <Button onClick={handleLogin} className="w-full mt-2">
-              Login
+            <Button onClick={handleLogin} disabled={isLoggingIn} className="w-full mt-2">
+              {isLoggingIn && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isLoggingIn ? 'Logging in...' : 'Login'}
             </Button>
           </div>
         </CardContent>
