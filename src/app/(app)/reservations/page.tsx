@@ -18,7 +18,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
-import { recentBookings as initialBookings } from '@/lib/data';
 import type { Booking, BookingStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Edit, Trash, Calendar } from 'lucide-react';
@@ -48,16 +47,17 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
+import { useBookings } from '@/context/bookings-context';
 
 const bookingStatusVariant: Record<BookingStatus, BadgeProps['variant']> = {
   'Confirmed': 'success',
-  'Pending': 'default',
+  'Pending': 'warning',
   'Cancelled': 'destructive',
 };
 
 export default function ReservationsPage() {
   const { toast } = useToast();
-  const [bookings, setBookings] = useState<Booking[]>(initialBookings);
+  const { bookings, addBooking, updateBooking, deleteBooking } = useBookings();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -112,25 +112,26 @@ export default function ReservationsPage() {
     }
 
     if (dialogMode === 'add') {
-      const newBooking: Booking = {
-        id: `BK${Math.floor(Math.random() * 1000) + 100}`,
+      addBooking({
         clientName,
         roomNumber: roomNumberValue,
         checkIn,
         checkOut,
         status: status as BookingStatus,
-      };
-      setBookings([...bookings, newBooking]);
+      });
       toast({
         title: 'Reservation Added',
         description: `Booking for ${clientName} has been created.`,
       });
     } else if (dialogMode === 'edit' && selectedBooking) {
-      setBookings(bookings.map(b =>
-        b.id === selectedBooking.id
-        ? { ...b, clientName, roomNumber: roomNumberValue, checkIn, checkOut, status: status as BookingStatus }
-        : b
-      ));
+      updateBooking({ 
+        ...selectedBooking, 
+        clientName, 
+        roomNumber: roomNumberValue, 
+        checkIn, 
+        checkOut, 
+        status: status as BookingStatus 
+      });
       toast({
         title: 'Reservation Updated',
         description: `Booking for ${clientName} has been updated.`,
@@ -141,7 +142,7 @@ export default function ReservationsPage() {
   };
 
   const handleDelete = (bookingId: string) => {
-    setBookings(bookings.filter(b => b.id !== bookingId));
+    deleteBooking(bookingId);
     toast({
       title: 'Reservation Deleted',
       description: 'The booking has been removed.',

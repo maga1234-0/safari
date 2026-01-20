@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -23,11 +23,12 @@ import {
   ChartConfig,
 } from '@/components/ui/chart';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { dashboardMetrics as initialMetrics, recentBookings, revenueData as initialRevenueData } from '@/lib/data';
-import type { Booking, BookingStatus } from '@/lib/types';
+import { dashboardMetrics as initialMetrics, revenueData as initialRevenueData } from '@/lib/data';
+import type { BookingStatus } from '@/lib/types';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { CircleDollarSign, Percent, CalendarPlus } from 'lucide-react';
 import { format } from 'date-fns';
+import { useBookings } from '@/context/bookings-context';
 
 const chartConfig = {
   revenue: {
@@ -38,14 +39,21 @@ const chartConfig = {
 
 const bookingStatusVariant: Record<BookingStatus, BadgeProps['variant']> = {
   'Confirmed': 'success',
-  'Pending': 'default',
+  'Pending': 'warning',
   'Cancelled': 'destructive',
 };
 
 export default function Dashboard() {
   const [metrics, setMetrics] = useState(initialMetrics);
-  const [bookings, setBookings] = useState<Booking[]>(recentBookings);
   const [revenueData, setRevenueData] = useState(initialRevenueData);
+  const { bookings } = useBookings();
+
+  const recentBookings = useMemo(() => {
+    return [...bookings]
+        .sort((a, b) => b.checkIn.getTime() - a.checkIn.getTime())
+        .slice(0, 5);
+  }, [bookings]);
+
 
   useEffect(() => {
     const metricsInterval = setInterval(() => {
@@ -58,30 +66,6 @@ export default function Dashboard() {
         }
       });
     }, 2500);
-
-    const bookingInterval = setInterval(() => {
-      if (Math.random() > 0.8) {
-        setBookings(prevBookings => {
-            if (Math.random() > 0.5 && prevBookings.length > 0) {
-                const bookingToUpdateIndex = Math.floor(Math.random() * prevBookings.length);
-                const newBookings = [...prevBookings];
-                const statusOptions: BookingStatus[] = ['Confirmed', 'Pending', 'Cancelled'];
-                newBookings[bookingToUpdateIndex].status = statusOptions[Math.floor(Math.random() * statusOptions.length)];
-                return newBookings.sort((a, b) => b.checkIn.getTime() - a.checkIn.getTime());
-            } else {
-                 const newBooking: Booking = {
-                    id: `BK${Math.floor(Math.random() * 1000) + 100}`,
-                    clientName: ['Olivia Martinez', 'Liam Wilson', 'Emma Anderson', 'Noah Garcia'][Math.floor(Math.random() * 4)],
-                    roomNumber: Math.floor(Math.random() * 200) + 100,
-                    checkIn: new Date(),
-                    checkOut: new Date(new Date().getTime() + (Math.floor(Math.random() * 5) + 1) * 24 * 60 * 60 * 1000),
-                    status: 'Pending',
-                 };
-                return [newBooking, ...prevBookings.slice(0, 4)];
-            }
-        });
-      }
-    }, 4000);
     
     const revenueInterval = setInterval(() => {
       setRevenueData(prevData => {
@@ -94,7 +78,6 @@ export default function Dashboard() {
 
     return () => {
       clearInterval(metricsInterval);
-      clearInterval(bookingInterval);
       clearInterval(revenueInterval);
     }
   }, []);
@@ -198,7 +181,7 @@ export default function Dashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {bookings.map((booking) => (
+                {recentBookings.map((booking) => (
                   <TableRow key={booking.id}>
                     <TableCell>
                       <div className="font-medium">{booking.clientName}</div>
