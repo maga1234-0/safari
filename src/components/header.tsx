@@ -5,7 +5,6 @@ import { useTheme } from "next-themes";
 import { useRouter } from 'next/navigation';
 import {
   Bell,
-  Laptop,
   Moon,
   Sun,
 } from 'lucide-react';
@@ -16,11 +15,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SidebarTrigger } from './ui/sidebar';
@@ -31,7 +26,7 @@ import { Skeleton } from './ui/skeleton';
 export function Header() {
   const [isMounted, setIsMounted] = React.useState(false);
   const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar-1');
-  const { setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const router = useRouter();
 
 
@@ -47,6 +42,21 @@ export function Header() {
     <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
       <SidebarTrigger />
       <div className="w-full flex-1" />
+
+      {isMounted ? (
+         <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setTheme(resolvedTheme === 'light' ? 'dark' : 'light')}
+          >
+            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <span className="sr-only">Toggle theme</span>
+          </Button>
+      ) : <Skeleton className="h-8 w-8" />}
+
+
       <Button variant="ghost" size="icon" className="h-8 w-8">
         <Bell className="h-4 w-4" />
         <span className="sr-only">Toggle notifications</span>
@@ -67,29 +77,6 @@ export function Header() {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => router.push('/settings')}>Settings</DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push('/dashboard')}>Support</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <Sun />
-                <span>Theme</span>
-              </DropdownMenuSubTrigger>
-              <DropdownMenuPortal>
-                <DropdownMenuSubContent>
-                  <DropdownMenuItem onClick={() => setTheme('light')}>
-                    <Sun />
-                    <span>Light</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setTheme('dark')}>
-                    <Moon />
-                    <span>Dark</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setTheme('system')}>
-                    <Laptop />
-                    <span>System</span>
-                  </DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuPortal>
-            </DropdownMenuSub>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
           </DropdownMenuContent>
