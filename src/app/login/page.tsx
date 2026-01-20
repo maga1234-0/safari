@@ -1,19 +1,25 @@
 'use client';
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Compass } from "lucide-react";
+import { Compass, Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = () => {
     // In a real app, you'd have authentication logic here.
     // For now, we'll just redirect to the dashboard.
     router.push('/dashboard');
+  };
+  
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
@@ -42,12 +48,29 @@ export default function LoginPage() {
               <div className="flex items-center">
                 <Label htmlFor="password">Password</Label>
               </div>
-              <Input 
-                id="password" 
-                type="password" 
-                required 
-                defaultValue="password"
-              />
+              <div className="relative">
+                <Input 
+                  id="password" 
+                  type={showPassword ? "text" : "password"}
+                  required 
+                  defaultValue="password"
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute inset-y-0 right-0 h-full px-3"
+                  onClick={togglePasswordVisibility}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-gray-500" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-gray-500" />
+                  )}
+                  <span className="sr-only">Toggle password visibility</span>
+                </Button>
+              </div>
             </div>
             <Button onClick={handleLogin} className="w-full mt-2">
               Login
