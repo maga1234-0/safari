@@ -68,11 +68,11 @@ export function SidebarNav() {
   ];
 
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon">
       <SidebarHeader>
         <div className="flex items-center gap-2">
           <Compass className="h-8 w-8 text-sidebar-primary" />
-          <h1 className="text-xl font-semibold font-headline text-primary-foreground">
+          <h1 className="text-xl font-semibold font-headline text-primary-foreground group-data-[state=collapsed]:hidden">
             Safari
           </h1>
         </div>
