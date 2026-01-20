@@ -23,3 +23,17 @@ export type Room = {
   status: RoomStatus;
   price: number;
 };
+
+export type StaffRole = 'Admin' | 'Reception' | 'Housekeeping';
+
+export type StaffMember = {
+  id: string;
+  name: string;
+  email: string;
+  role: StaffRole;
+};
+
+export type HotelConfig = {
+  taxRate: number;
+  bookingPolicy: string;
+};
