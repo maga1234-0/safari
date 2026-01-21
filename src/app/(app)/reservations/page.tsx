@@ -231,6 +231,20 @@ export default function ReservationsPage() {
     );
   }, [bookings, searchTerm]);
 
+  const calculateTotal = (booking: Booking) => {
+    if (booking.totalAmount) {
+      return booking.totalAmount;
+    }
+    if (booking.pricePerNight && booking.checkIn && booking.checkOut) {
+      const checkInDay = toDateSafe(booking.checkIn);
+      const checkOutDay = toDateSafe(booking.checkOut);
+      const nights = differenceInDays(checkOutDay, checkInDay);
+      const nightsCount = nights > 0 ? nights : 1;
+      return booking.pricePerNight * nightsCount;
+    }
+    return 0;
+  }
+
 
   return (
     <div>
@@ -262,6 +276,7 @@ export default function ReservationsPage() {
                 <TableHead>Check-in</TableHead>
                 <TableHead>Check-out</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Total</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -277,6 +292,7 @@ export default function ReservationsPage() {
                       {booking.status}
                     </Badge>
                   </TableCell>
+                  <TableCell>${calculateTotal(booking).toFixed(2)}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(booking)}>
                         <Edit className="h-4 w-4" />
