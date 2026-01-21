@@ -25,14 +25,12 @@ import {
   DropdownMenuLabel, 
   DropdownMenuSeparator, 
   DropdownMenuCheckboxItem,
-  DropdownMenuItem
 } from '@/components/ui/dropdown-menu';
-import { ListFilter, MoreHorizontal, Search } from 'lucide-react';
+import { ListFilter, Search } from 'lucide-react';
 import type { Booking, PaymentStatus } from '@/lib/types';
-import { useCollection, useFirestore, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
-import { collection, doc, query } from 'firebase/firestore';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query } from 'firebase/firestore';
 import { format, toDate, differenceInDays } from 'date-fns';
-import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 
 const paymentStatusVariant: Record<PaymentStatus, BadgeProps['variant']> = {
@@ -49,7 +47,6 @@ function toDateSafe(date: any): Date {
 }
 
 export default function BillingPage() {
-  const { toast } = useToast();
   const firestore = useFirestore();
 
   const reservationsQuery = useMemoFirebase(() => {
@@ -60,27 +57,6 @@ export default function BillingPage() {
   
   const [statusFilter, setStatusFilter] = useState<PaymentStatus[]>(['Pending', 'Paid', 'Refunded']);
   const [searchTerm, setSearchTerm] = useState('');
-
-  const handleMarkAsPaid = (bookingId: string) => {
-    if (!firestore) return;
-    const bookingRef = doc(firestore, 'reservations', bookingId);
-    updateDocumentNonBlocking(bookingRef, { paymentStatus: 'Paid' });
-    toast({
-        title: 'Payment Status Updated',
-        description: 'The reservation has been marked as paid.',
-    });
-  };
-
-  const handleRefund = (bookingId: string) => {
-    if (!firestore) return;
-    const bookingRef = doc(firestore, 'reservations', bookingId);
-    updateDocumentNonBlocking(bookingRef, { paymentStatus: 'Refunded' });
-    toast({
-        variant: 'destructive',
-        title: 'Payment Refunded',
-        description: 'The reservation has been marked as refunded.',
-    });
-  };
 
   const filteredReservations = useMemo(() => {
     if (!reservations) return [];
@@ -173,7 +149,6 @@ export default function BillingPage() {
                 <TableHead>Dates</TableHead>
                 <TableHead>Total</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -190,33 +165,6 @@ export default function BillingPage() {
                     <Badge variant={paymentStatusVariant[booking.paymentStatus || 'Pending']}>
                       {booking.paymentStatus || 'Pending'}
                     </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                disabled={!booking.paymentStatus || booking.paymentStatus === 'Refunded'}
-                            >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Actions</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            {booking.paymentStatus === 'Pending' && (
-                                <DropdownMenuItem onClick={() => handleMarkAsPaid(booking.id)}>
-                                    Mark as Paid
-                                </DropdownMenuItem>
-                            )}
-                            {booking.paymentStatus === 'Paid' && (
-                                <DropdownMenuItem onClick={() => handleRefund(booking.id)}>
-                                    Issue Refund
-                                </DropdownMenuItem>
-                            )}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))}
