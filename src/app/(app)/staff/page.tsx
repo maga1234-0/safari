@@ -68,6 +68,7 @@ export default function StaffPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<StaffRole | ''>('');
+  const [password, setPassword] = useState('');
 
   const handleOpenAddDialog = () => {
     setDialogMode('add');
@@ -75,6 +76,7 @@ export default function StaffPage() {
     setName('');
     setEmail('');
     setRole('');
+    setPassword('');
     setDialogOpen(true);
   };
 
@@ -84,6 +86,7 @@ export default function StaffPage() {
     setName(staffMember.name);
     setEmail(staffMember.email);
     setRole(staffMember.role);
+    setPassword('');
     setDialogOpen(true);
   };
   
@@ -111,8 +114,16 @@ export default function StaffPage() {
     if (dialogMode === 'add') {
       try {
         if (role === 'Admin') {
-          // Create the Firebase Auth user with a default password.
-          await initiateEmailSignUp(auth, email, "password");
+          if (!password) {
+            toast({
+              variant: 'destructive',
+              title: 'Password Required',
+              description: 'Please assign a password for the new admin.',
+            });
+            return;
+          }
+          // Create the Firebase Auth user with the assigned password.
+          await initiateEmailSignUp(auth, email, password);
         }
         
         // Add the staff member's details to the 'staff' collection in Firestore.
@@ -121,7 +132,7 @@ export default function StaffPage() {
         toast({
           title: 'Staff Member Added',
           description: role === 'Admin' 
-            ? `${name} can now log in with their email and the default password.`
+            ? `${name} can now log in with their email and the assigned password.`
             : `${name} has been added to the staff list.`,
         });
 
@@ -256,6 +267,14 @@ export default function StaffPage() {
                     </SelectContent>
                 </Select>
               </div>
+              {dialogMode === 'add' && role === 'Admin' && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="password" className="text-right">
+                    Password
+                  </Label>
+                  <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Assign a password" className="col-span-3" />
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button onClick={handleSave}>Save changes</Button>
