@@ -208,6 +208,14 @@ export default function ReservationsPage() {
       let newPaymentStatus: PaymentStatus = selectedBooking.paymentStatus || 'Pending';
       if (statusesThatImplyPaid.includes(status as BookingStatus)) {
         newPaymentStatus = 'Paid';
+      } else if (status === 'Cancelled') {
+        if (selectedBooking.paymentStatus === 'Paid') {
+            newPaymentStatus = 'Refunded';
+        } else {
+            newPaymentStatus = 'Pending';
+        }
+      } else {
+        newPaymentStatus = 'Pending';
       }
 
       const updatedBooking = { 

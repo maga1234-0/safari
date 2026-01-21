@@ -89,7 +89,7 @@ export default function Dashboard() {
       if ((booking.status === 'CheckedIn' || booking.status === 'Confirmed') && today >= checkOutDate) {
         
         const bookingRef = doc(firestore, 'reservations', booking.id);
-        updateDocumentNonBlocking(bookingRef, { status: 'CheckedOut' });
+        updateDocumentNonBlocking(bookingRef, { status: 'CheckedOut', paymentStatus: 'Paid' });
 
         const roomRef = doc(firestore, 'rooms', booking.roomId);
         updateDocumentNonBlocking(roomRef, { status: 'Available' });
