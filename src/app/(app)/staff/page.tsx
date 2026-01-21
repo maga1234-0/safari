@@ -39,8 +39,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking, useAuth, initiateEmailSignUp } from '@/firebase';
 import { collection, doc, query } from 'firebase/firestore';
+import { FirebaseError } from 'firebase/app';
 
 const roleVariant: Record<StaffRole, BadgeProps['variant']> = {
   'Admin': 'destructive',
@@ -51,6 +52,8 @@ const roleVariant: Record<StaffRole, BadgeProps['variant']> = {
 export default function StaffPage() {
   const { toast } = useToast();
   const firestore = useFirestore();
+  const auth = useAuth();
+
   const staffQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'staff'));
@@ -93,8 +96,8 @@ export default function StaffPage() {
     });
   };
 
-  const handleSave = () => {
-    if (!name || !email || !role || !firestore) {
+  const handleSave = async () => {
+    if (!name || !email || !role || !firestore || !auth) {
       toast({
         variant: 'destructive',
         title: 'Missing Information',
@@ -106,11 +109,40 @@ export default function StaffPage() {
     const staffData = { name, email, role: role as StaffRole };
 
     if (dialogMode === 'add') {
-      addDocumentNonBlocking(collection(firestore, 'staff'), staffData);
-      toast({
-        title: 'Staff Member Added',
-        description: `${name} has been added to the staff list.`,
-      });
+      try {
+        if (role === 'Admin') {
+          // Create the Firebase Auth user with a default password.
+          await initiateEmailSignUp(auth, email, "password");
+        }
+        
+        // Add the staff member's details to the 'staff' collection in Firestore.
+        addDocumentNonBlocking(collection(firestore, 'staff'), staffData);
+
+        toast({
+          title: 'Staff Member Added',
+          description: role === 'Admin' 
+            ? `${name} can now log in with their email and the default password.`
+            : `${name} has been added to the staff list.`,
+        });
+
+      } catch (error) {
+        if (error instanceof FirebaseError) {
+          toast({
+            variant: 'destructive',
+            title: 'Error Creating Staff',
+            description: error.code === 'auth/email-already-in-use' 
+              ? 'An account with this email already exists.' 
+              : error.message,
+          });
+        } else {
+           toast({
+            variant: 'destructive',
+            title: 'An Unknown Error Occurred',
+            description: 'Could not create the staff member.',
+          });
+        }
+        return; // Prevent dialog from closing on error
+      }
     } else if (dialogMode === 'edit' && selectedStaff) {
       updateDocumentNonBlocking(doc(firestore, 'staff', selectedStaff.id), staffData);
       toast({
