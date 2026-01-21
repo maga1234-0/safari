@@ -25,7 +25,15 @@ import {
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import type { Booking, BookingStatus, Room } from '@/lib/types';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
-import { CircleDollarSign, Percent, CalendarPlus, Loader2 } from 'lucide-react';
+import {
+  CircleDollarSign,
+  CalendarPlus,
+  Loader2,
+  Bed,
+  BedDouble,
+  Wrench,
+  Building,
+} from 'lucide-react';
 import { format, differenceInDays, isToday, startOfDay, toDate, getYear, startOfYear, endOfYear } from 'date-fns';
 import { useCollection, useFirestore, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { collection, query, doc } from 'firebase/firestore';
@@ -96,7 +104,7 @@ export default function Dashboard() {
 
   const metrics = useMemo(() => {
     if (!bookings || !rooms) {
-      return { totalRevenue: 0, occupancyRate: 0, newBookings: 0 };
+      return { totalRevenue: 0, newBookings: 0, availableRooms: 0, occupiedRooms: 0, maintenanceRooms: 0, totalRooms: 0 };
     }
 
     const revenueBookings = bookings.filter(b => 
@@ -114,25 +122,21 @@ export default function Dashboard() {
 
       return acc + (price * nightsCount);
     }, 0);
-
-    const today = startOfDay(new Date());
-    const occupiedRoomsToday = bookings.filter(b => {
-        const checkIn = startOfDay(toDateSafe(b.checkIn));
-        const checkOut = startOfDay(toDateSafe(b.checkOut));
-        const isOccupying = today >= checkIn && today < checkOut;
-        const isOccupyingStatus = b.status === 'Confirmed' || b.status === 'CheckedIn';
-        return isOccupying && isOccupyingStatus;
-    });
-
-    const occupiedRoomNumbers = new Set(occupiedRoomsToday.map(b => b.roomNumber));
-    const occupancyRate = rooms.length > 0 ? (occupiedRoomNumbers.size / rooms.length) * 100 : 0;
     
     const newBookings = bookings.filter(b => isToday(toDateSafe(b.createdAt))).length;
 
+    const availableRooms = rooms.filter(r => r.status === 'Available').length;
+    const occupiedRooms = rooms.filter(r => r.status === 'Occupied').length;
+    const maintenanceRooms = rooms.filter(r => r.status === 'Maintenance').length;
+    const totalRooms = rooms.length;
+
     return {
       totalRevenue,
-      occupancyRate,
       newBookings,
+      availableRooms,
+      occupiedRooms,
+      maintenanceRooms,
+      totalRooms,
     };
   }, [bookings, rooms]);
 
@@ -214,17 +218,37 @@ export default function Dashboard() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Occupancy Rate
-            </CardTitle>
-            <Percent className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Available Rooms</CardTitle>
+            <Bed className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold font-headline">
-              {metrics.occupancyRate.toFixed(1)}%
-            </div>
+            <div className="text-2xl font-bold font-headline">{metrics.availableRooms}</div>
             <p className="text-xs text-muted-foreground">
-              Based on available rooms
+              {metrics.totalRooms > 0 ? `${((metrics.availableRooms / metrics.totalRooms) * 100).toFixed(0)}% of total rooms` : 'No rooms available'}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Occupied Rooms</CardTitle>
+            <BedDouble className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold font-headline">{metrics.occupiedRooms}</div>
+            <p className="text-xs text-muted-foreground">
+               {metrics.totalRooms > 0 ? `${((metrics.occupiedRooms / metrics.totalRooms) * 100).toFixed(0)}% of total rooms` : 'No rooms available'}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Under Maintenance</CardTitle>
+            <Wrench className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold font-headline">{metrics.maintenanceRooms}</div>
+            <p className="text-xs text-muted-foreground">
+              Rooms currently unavailable
             </p>
           </CardContent>
         </Card>
@@ -240,6 +264,16 @@ export default function Dashboard() {
             <p className="text-xs text-muted-foreground">
               Based on creation date
             </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Rooms</CardTitle>
+            <Building className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold font-headline">{metrics.totalRooms}</div>
+            <p className="text-xs text-muted-foreground">Total hotel capacity</p>
           </CardContent>
         </Card>
       </div>
