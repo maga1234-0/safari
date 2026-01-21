@@ -1,6 +1,7 @@
 import type { Timestamp } from 'firebase/firestore';
 
 export type BookingStatus = 'Confirmed' | 'Pending' | 'Cancelled' | 'CheckedIn' | 'CheckedOut' | 'Reserved';
+export type PaymentStatus = 'Pending' | 'Paid' | 'Refunded';
 
 export type Booking = {
   id: string;
@@ -13,6 +14,8 @@ export type Booking = {
   status: BookingStatus;
   createdAt: Date | Timestamp;
   pricePerNight?: number;
+  paymentStatus?: PaymentStatus;
+  totalAmount?: number;
 };
 
 export type Revenue = {

@@ -40,7 +40,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { format, toDate, parse } from 'date-fns';
+import { format, toDate, parse, differenceInDays } from 'date-fns';
 import { useCollection, useFirestore, useUser, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, doc, query, serverTimestamp } from 'firebase/firestore';
 
@@ -154,7 +154,11 @@ export default function ReservationsPage() {
     const roomRef = doc(firestore, 'rooms', roomId);
     const newRoomStatus = status === 'Cancelled' || status === 'CheckedOut' ? 'Available' : 'Occupied';
 
+    const nights = differenceInDays(checkOut, checkIn);
+    const nightsCount = nights > 0 ? nights : 1;
+
     if (dialogMode === 'add') {
+      const totalAmount = selectedRoom.price * nightsCount;
       const newBooking = {
         clientId: user.uid,
         clientName,
@@ -165,6 +169,8 @@ export default function ReservationsPage() {
         status: status as BookingStatus,
         createdAt: serverTimestamp(),
         pricePerNight: selectedRoom.price,
+        paymentStatus: 'Pending',
+        totalAmount,
       };
       addDocumentNonBlocking(collection(firestore, 'reservations'), newBooking);
       updateDocumentNonBlocking(roomRef, { status: newRoomStatus });
@@ -182,6 +188,8 @@ export default function ReservationsPage() {
         ? selectedRoom.price 
         : selectedBooking.pricePerNight ?? selectedRoom.price;
 
+      const totalAmount = pricePerNight * nightsCount;
+
       const updatedBooking = { 
         ...selectedBooking, 
         clientName, 
@@ -191,6 +199,8 @@ export default function ReservationsPage() {
         checkOut, 
         status: status as BookingStatus,
         pricePerNight,
+        totalAmount,
+        paymentStatus: selectedBooking.paymentStatus || 'Pending',
       };
       updateDocumentNonBlocking(doc(firestore, 'reservations', selectedBooking.id), updatedBooking);
       updateDocumentNonBlocking(roomRef, { status: newRoomStatus });

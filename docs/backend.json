@@ -92,6 +92,19 @@
             "Confirmed",
             "Pending"
           ]
+        },
+        "paymentStatus": {
+          "type": "string",
+          "description": "The payment status of the reservation.",
+          "enum": [
+            "Pending",
+            "Paid",
+            "Refunded"
+          ]
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "The total amount for the reservation."
         }
       },
       "required": [
