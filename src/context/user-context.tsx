@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useUser as useFirebaseAuthUser } from '@/firebase';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 interface UserContextType {
   avatar: string;
@@ -11,19 +10,17 @@ interface UserContextType {
   setName: (name: string) => void;
 }
 
-const userAvatarPlaceholder = PlaceHolderImages.find(p => p.id === 'user-avatar-1');
-
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const { user } = useFirebaseAuthUser();
-  const [avatar, setAvatar] = useState<string>(userAvatarPlaceholder?.imageUrl || '');
+  const [avatar, setAvatar] = useState<string>('');
   const [name, setName] = useState<string>('Admin');
 
   useEffect(() => {
     if (user) {
       setName(user.displayName || 'Admin');
-      setAvatar(user.photoURL || userAvatarPlaceholder?.imageUrl || '');
+      setAvatar(user.photoURL || '');
     }
   }, [user]);
 
