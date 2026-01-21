@@ -70,6 +70,17 @@ export default function BillingPage() {
     });
   };
 
+  const handleRefund = (bookingId: string) => {
+    if (!firestore) return;
+    const bookingRef = doc(firestore, 'reservations', bookingId);
+    updateDocumentNonBlocking(bookingRef, { paymentStatus: 'Refunded' });
+    toast({
+        variant: 'destructive',
+        title: 'Payment Refunded',
+        description: 'The reservation has been marked as refunded.',
+    });
+  };
+
   const filteredReservations = useMemo(() => {
     if (!reservations) return [];
     return reservations
@@ -182,6 +193,9 @@ export default function BillingPage() {
                   <TableCell className="text-right">
                     {booking.paymentStatus === 'Pending' && (
                         <Button size="sm" onClick={() => handleMarkAsPaid(booking.id)}>Mark as Paid</Button>
+                    )}
+                    {booking.paymentStatus === 'Paid' && (
+                        <Button variant="outline" size="sm" onClick={() => handleRefund(booking.id)}>Issue Refund</Button>
                     )}
                   </TableCell>
                 </TableRow>
