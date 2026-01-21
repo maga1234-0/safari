@@ -19,7 +19,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
-import type { Booking, BookingStatus } from '@/lib/types';
+import type { Booking, BookingStatus, PaymentStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Edit, Trash, Search } from 'lucide-react';
 import {
@@ -157,6 +157,8 @@ export default function ReservationsPage() {
     const nights = differenceInDays(checkOut, checkIn);
     const nightsCount = nights > 0 ? nights : 1;
 
+    const statusesThatImplyPaid: BookingStatus[] = ['Confirmed', 'CheckedIn', 'CheckedOut'];
+
     if (dialogMode === 'add') {
       const totalAmount = selectedRoom.price * nightsCount;
       const newBooking = {
@@ -169,7 +171,7 @@ export default function ReservationsPage() {
         status: status as BookingStatus,
         createdAt: serverTimestamp(),
         pricePerNight: selectedRoom.price,
-        paymentStatus: 'Pending',
+        paymentStatus: statusesThatImplyPaid.includes(status as BookingStatus) ? 'Paid' : 'Pending',
         totalAmount,
       };
       addDocumentNonBlocking(collection(firestore, 'reservations'), newBooking);
@@ -190,6 +192,11 @@ export default function ReservationsPage() {
 
       const totalAmount = pricePerNight * nightsCount;
 
+      let newPaymentStatus: PaymentStatus = selectedBooking.paymentStatus || 'Pending';
+      if (statusesThatImplyPaid.includes(status as BookingStatus)) {
+        newPaymentStatus = 'Paid';
+      }
+
       const updatedBooking = { 
         ...selectedBooking, 
         clientName, 
@@ -200,7 +207,7 @@ export default function ReservationsPage() {
         status: status as BookingStatus,
         pricePerNight,
         totalAmount,
-        paymentStatus: selectedBooking.paymentStatus || 'Pending',
+        paymentStatus: newPaymentStatus,
       };
       updateDocumentNonBlocking(doc(firestore, 'reservations', selectedBooking.id), updatedBooking);
       updateDocumentNonBlocking(roomRef, { status: newRoomStatus });
