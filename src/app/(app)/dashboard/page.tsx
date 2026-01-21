@@ -78,7 +78,9 @@ export default function Dashboard() {
     );
 
     const totalRevenue = revenueBookings.reduce((acc, booking) => {
-      const nights = differenceInDays(toDateSafe(booking.checkOut), toDateSafe(booking.checkIn));
+      const checkInDay = startOfDay(toDateSafe(booking.checkIn));
+      const checkOutDay = startOfDay(toDateSafe(booking.checkOut));
+      const nights = differenceInDays(checkOutDay, checkInDay);
       const nightsCount = nights > 0 ? nights : 1;
 
       // Prioritize price from booking, fallback to room price
@@ -143,7 +145,9 @@ export default function Dashboard() {
     revenueBookings.forEach(booking => {
       const checkInDate = toDateSafe(booking.checkIn);
       const month = format(checkInDate, 'MMM');
-      const nights = differenceInDays(toDateSafe(booking.checkOut), toDateSafe(booking.checkIn));
+      const checkInDay = startOfDay(toDateSafe(booking.checkIn));
+      const checkOutDay = startOfDay(toDateSafe(booking.checkOut));
+      const nights = differenceInDays(checkOutDay, checkInDay);
       const nightsCount = nights > 0 ? nights : 1;
       const price = booking.pricePerNight ?? rooms.find(r => r.id === booking.roomId)?.price ?? 0;
       const bookingRevenue = price * nightsCount;
