@@ -24,11 +24,14 @@ import {
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/firebase';
+import { useUser as useAppUser } from '@/context/user-context';
+import { useMemo } from 'react';
 
 export function SidebarNav() {
   const pathname = usePathname();
   const router = useRouter();
   const auth = useAuth();
+  const { role, isRoleLoading } = useAppUser();
 
   const isActive = (path: string) => {
     return pathname === path;
@@ -82,6 +85,19 @@ export function SidebarNav() {
     },
   ];
 
+  const visibleMenuItems = useMemo(() => {
+    if (isRoleLoading) {
+      return [];
+    }
+
+    if (role === 'Admin') {
+      const adminPages = ['/dashboard', '/rooms', '/reservations', '/clients'];
+      return menuItems.filter(item => adminPages.includes(item.href));
+    }
+
+    return menuItems;
+  }, [role, isRoleLoading]);
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -93,7 +109,7 @@ export function SidebarNav() {
         </div>
       </SidebarHeader>
       <SidebarMenu>
-        {menuItems.map((item) => (
+        {visibleMenuItems.map((item) => (
           <SidebarMenuItem key={item.href}>
             <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={item.label}>
               <Link href={item.href}>
