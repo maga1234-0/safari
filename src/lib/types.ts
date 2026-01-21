@@ -43,3 +43,14 @@ export type HotelConfig = {
   taxRate: number;
   bookingPolicy: string;
 };
+
+export type Client = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  address?: string;
+  preferences?: string;
+  notes?: string;
+};
