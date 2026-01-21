@@ -5,7 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
-  title: 'Safari Hotel Manager',
+  title: 'PMS safari',
   description: 'Logiciel hôtelier pour les hôtels modernes d’Afrique',
 };
 

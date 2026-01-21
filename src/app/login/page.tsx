@@ -69,7 +69,7 @@ export default function LoginPage() {
           <div className="flex justify-center items-center mb-4">
             <Home className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-headline">Safari Hotel Manager</CardTitle>
+          <CardTitle className="text-2xl font-headline">PMS safari</CardTitle>
           <CardDescription>Enter your credentials to access the admin panel.</CardDescription>
         </CardHeader>
         <CardContent>
