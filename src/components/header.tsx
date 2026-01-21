@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { useTheme } from "next-themes";
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   Bell,
   LogOut,
@@ -25,6 +26,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Skeleton } from './ui/skeleton';
 import { useUser as useAppUser } from '@/context/user-context';
 import { useAuth, useUser as useFirebaseAuthUser } from '@/firebase';
+import { useNotifications } from '@/context/notification-context';
 
 export function Header() {
   const [isMounted, setIsMounted] = React.useState(false);
@@ -33,6 +35,7 @@ export function Header() {
   const router = useRouter();
   const auth = useAuth();
   const { user: firebaseUser } = useFirebaseAuthUser();
+  const { notifications, clearNotifications } = useNotifications();
 
 
   React.useEffect(() => {
@@ -68,10 +71,41 @@ export function Header() {
       ) : <Skeleton className="h-8 w-8" />}
 
 
-      <Button variant="ghost" size="icon" className="h-8 w-8">
-        <Bell className="h-4 w-4" />
-        <span className="sr-only">Toggle notifications</span>
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="relative h-8 w-8">
+            {notifications.length > 0 && (
+              <span className="absolute top-0.5 right-0.5 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+              </span>
+            )}
+            <Bell className="h-4 w-4" />
+            <span className="sr-only">Toggle notifications</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-80">
+          <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {notifications.length > 0 ? (
+            <>
+              {notifications.map((notification) => (
+                <DropdownMenuItem key={notification.id} asChild className="cursor-pointer">
+                  <Link href={notification.link || '#'}>
+                    {notification.message}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={clearNotifications} className="justify-center cursor-pointer">
+                Clear all
+              </DropdownMenuItem>
+            </>
+          ) : (
+            <DropdownMenuItem disabled>No new notifications</DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
       
       {isMounted && firebaseUser ? (
         <DropdownMenu>

@@ -6,6 +6,7 @@ import { Header } from '@/components/header';
 import { SidebarNav } from '@/components/sidebar-nav';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { UserProvider } from '@/context/user-context';
+import { NotificationProvider } from '@/context/notification-context';
 import { useUser } from '@/firebase';
 import { Loader2 } from 'lucide-react';
 
@@ -29,15 +30,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <UserProvider>
-      <SidebarProvider>
-        <SidebarNav />
-        <SidebarInset>
-          <Header />
-          <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
-            {children}
-          </main>
-        </SidebarInset>
-      </SidebarProvider>
+      <NotificationProvider>
+        <SidebarProvider>
+          <SidebarNav />
+          <SidebarInset>
+            <Header />
+            <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+              {children}
+            </main>
+          </SidebarInset>
+        </SidebarProvider>
+      </NotificationProvider>
     </UserProvider>
   );
 }

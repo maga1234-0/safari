@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -27,8 +27,9 @@ import type { Booking, BookingStatus, Room } from '@/lib/types';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { CircleDollarSign, Percent, CalendarPlus, Loader2 } from 'lucide-react';
 import { format, differenceInDays, isToday, startOfDay, toDate, getYear, startOfYear, endOfYear } from 'date-fns';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query } from 'firebase/firestore';
+import { useCollection, useFirestore, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
+import { collection, query, doc } from 'firebase/firestore';
+import { useNotifications } from '@/context/notification-context';
 
 const chartConfig = {
   revenue: {
@@ -55,6 +56,7 @@ function toDateSafe(date: any): Date {
 
 export default function Dashboard() {
   const firestore = useFirestore();
+  const { addNotification } = useNotifications();
   
   const bookingsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -67,6 +69,30 @@ export default function Dashboard() {
     return query(collection(firestore, 'rooms'));
   }, [firestore]);
   const { data: rooms, isLoading: roomsLoading } = useCollection<Room>(roomsQuery);
+
+  useEffect(() => {
+    if (!bookings || !firestore) return;
+
+    const today = startOfDay(new Date());
+
+    bookings.forEach(booking => {
+      const checkOutDate = startOfDay(toDateSafe(booking.checkOut));
+      // Only act on bookings that are 'CheckedIn' or 'Confirmed' and due for checkout
+      if ((booking.status === 'CheckedIn' || booking.status === 'Confirmed') && today >= checkOutDate) {
+        
+        const bookingRef = doc(firestore, 'reservations', booking.id);
+        updateDocumentNonBlocking(bookingRef, { status: 'CheckedOut' });
+
+        const roomRef = doc(firestore, 'rooms', booking.roomId);
+        updateDocumentNonBlocking(roomRef, { status: 'Available' });
+
+        addNotification(
+          `Room ${booking.roomNumber} auto-checkout complete.`,
+          `/rooms`
+        );
+      }
+    });
+  }, [bookings, firestore, addNotification]);
 
   const metrics = useMemo(() => {
     if (!bookings || !rooms) {
