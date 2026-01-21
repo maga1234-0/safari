@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Save, Loader2 } from 'lucide-react';
+import { Save, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useUser } from '@/firebase';
 import { reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
@@ -27,6 +27,10 @@ export function PasswordSettings() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handlePasswordChange = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
@@ -96,33 +100,87 @@ export function PasswordSettings() {
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="currentPassword">Current Password</Label>
-          <Input 
-            id="currentPassword" 
-            type="password" 
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            disabled={isLoading}
-          />
+          <div className="relative">
+            <Input 
+              id="currentPassword" 
+              type={showCurrentPassword ? 'text' : 'password'}
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              disabled={isLoading}
+              className="pr-10"
+            />
+             <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute inset-y-0 right-0 h-full px-3"
+              onClick={() => setShowCurrentPassword((prev) => !prev)}
+              disabled={isLoading}
+            >
+              {showCurrentPassword ? (
+                <EyeOff className="h-4 w-4 text-gray-500" />
+              ) : (
+                <Eye className="h-4 w-4 text-gray-500" />
+              )}
+              <span className="sr-only">Toggle current password visibility</span>
+            </Button>
+          </div>
         </div>
         <div className="space-y-2">
           <Label htmlFor="newPassword">New Password</Label>
-          <Input 
-            id="newPassword" 
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            disabled={isLoading}
-          />
+           <div className="relative">
+            <Input 
+              id="newPassword" 
+              type={showNewPassword ? 'text' : 'password'}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              disabled={isLoading}
+               className="pr-10"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute inset-y-0 right-0 h-full px-3"
+              onClick={() => setShowNewPassword((prev) => !prev)}
+              disabled={isLoading}
+            >
+              {showNewPassword ? (
+                <EyeOff className="h-4 w-4 text-gray-500" />
+              ) : (
+                <Eye className="h-4 w-4 text-gray-500" />
+              )}
+              <span className="sr-only">Toggle new password visibility</span>
+            </Button>
+          </div>
         </div>
         <div className="space-y-2">
           <Label htmlFor="confirmPassword">Confirm New Password</Label>
-          <Input 
-            id="confirmPassword" 
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            disabled={isLoading}
-          />
+          <div className="relative">
+            <Input 
+              id="confirmPassword" 
+              type={showConfirmPassword ? 'text' : 'password'}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={isLoading}
+              className="pr-10"
+            />
+             <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute inset-y-0 right-0 h-full px-3"
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
+              disabled={isLoading}
+            >
+              {showConfirmPassword ? (
+                <EyeOff className="h-4 w-4 text-gray-500" />
+              ) : (
+                <Eye className="h-4 w-4 text-gray-500" />
+              )}
+              <span className="sr-only">Toggle confirm new password visibility</span>
+            </Button>
+          </div>
         </div>
       </CardContent>
       <CardFooter className="border-t px-6 py-4">
