@@ -24,9 +24,10 @@ import {
   DropdownMenuContent, 
   DropdownMenuLabel, 
   DropdownMenuSeparator, 
-  DropdownMenuCheckboxItem 
+  DropdownMenuCheckboxItem,
+  DropdownMenuItem
 } from '@/components/ui/dropdown-menu';
-import { ListFilter, Search } from 'lucide-react';
+import { ListFilter, MoreHorizontal, Search } from 'lucide-react';
 import type { Booking, PaymentStatus } from '@/lib/types';
 import { useCollection, useFirestore, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { collection, doc, query } from 'firebase/firestore';
@@ -191,12 +192,31 @@ export default function BillingPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    {booking.paymentStatus === 'Pending' && (
-                        <Button size="sm" onClick={() => handleMarkAsPaid(booking.id)}>Mark as Paid</Button>
-                    )}
-                    {booking.paymentStatus === 'Paid' && (
-                        <Button variant="outline" size="sm" onClick={() => handleRefund(booking.id)}>Issue Refund</Button>
-                    )}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                disabled={!booking.paymentStatus || booking.paymentStatus === 'Refunded'}
+                            >
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Actions</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            {booking.paymentStatus === 'Pending' && (
+                                <DropdownMenuItem onClick={() => handleMarkAsPaid(booking.id)}>
+                                    Mark as Paid
+                                </DropdownMenuItem>
+                            )}
+                            {booking.paymentStatus === 'Paid' && (
+                                <DropdownMenuItem onClick={() => handleRefund(booking.id)}>
+                                    Issue Refund
+                                </DropdownMenuItem>
+                            )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))}
