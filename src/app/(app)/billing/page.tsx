@@ -26,12 +26,13 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuCheckboxItem 
 } from '@/components/ui/dropdown-menu';
-import { ListFilter } from 'lucide-react';
+import { ListFilter, Search } from 'lucide-react';
 import type { Booking, PaymentStatus } from '@/lib/types';
 import { useCollection, useFirestore, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { collection, doc, query } from 'firebase/firestore';
 import { format, toDate, differenceInDays } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
 
 const paymentStatusVariant: Record<PaymentStatus, BadgeProps['variant']> = {
   'Paid': 'success',
@@ -57,6 +58,7 @@ export default function BillingPage() {
   const { data: reservations } = useCollection<Booking>(reservationsQuery);
   
   const [statusFilter, setStatusFilter] = useState<PaymentStatus[]>(['Pending', 'Paid', 'Refunded']);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleMarkAsPaid = (bookingId: string) => {
     if (!firestore) return;
@@ -70,8 +72,10 @@ export default function BillingPage() {
 
   const filteredReservations = useMemo(() => {
     if (!reservations) return [];
-    return reservations.filter(reservation => statusFilter.includes(reservation.paymentStatus || 'Pending'));
-  }, [reservations, statusFilter]);
+    return reservations
+      .filter(reservation => statusFilter.includes(reservation.paymentStatus || 'Pending'))
+      .filter(reservation => reservation.clientName.toLowerCase().includes(searchTerm.toLowerCase()));
+  }, [reservations, statusFilter, searchTerm]);
   
   const calculateTotal = (booking: Booking) => {
     if (booking.totalAmount) {
@@ -97,44 +101,56 @@ export default function BillingPage() {
               <CardTitle>Invoices</CardTitle>
               <CardDescription>View and manage all financial transactions.</CardDescription>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 gap-1">
-                  <ListFilter className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Filter
-                  </span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Filter by payment status</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuCheckboxItem
-                  checked={statusFilter.includes('Pending')}
-                  onCheckedChange={(checked) => {
-                    setStatusFilter(current => checked ? [...current, 'Pending'] : current.filter(s => s !== 'Pending'));
-                  }}
-                >
-                  Pending
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
-                  checked={statusFilter.includes('Paid')}
-                   onCheckedChange={(checked) => {
-                    setStatusFilter(current => checked ? [...current, 'Paid'] : current.filter(s => s !== 'Paid'));
-                  }}
-                >
-                  Paid
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
-                  checked={statusFilter.includes('Refunded')}
-                   onCheckedChange={(checked) => {
-                    setStatusFilter(current => checked ? [...current, 'Refunded'] : current.filter(s => s !== 'Refunded'));
-                  }}
-                >
-                  Refunded
-                </DropdownMenuCheckboxItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="flex items-center gap-2">
+              <div className="relative w-full max-w-sm">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search by client name..."
+                  className="w-full appearance-none bg-background pl-8 shadow-none"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-10 gap-1">
+                    <ListFilter className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                      Filter
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Filter by payment status</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuCheckboxItem
+                    checked={statusFilter.includes('Pending')}
+                    onCheckedChange={(checked) => {
+                      setStatusFilter(current => checked ? [...current, 'Pending'] : current.filter(s => s !== 'Pending'));
+                    }}
+                  >
+                    Pending
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={statusFilter.includes('Paid')}
+                    onCheckedChange={(checked) => {
+                      setStatusFilter(current => checked ? [...current, 'Paid'] : current.filter(s => s !== 'Paid'));
+                    }}
+                  >
+                    Paid
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={statusFilter.includes('Refunded')}
+                    onCheckedChange={(checked) => {
+                      setStatusFilter(current => checked ? [...current, 'Refunded'] : current.filter(s => s !== 'Refunded'));
+                    }}
+                  >
+                    Refunded
+                  </DropdownMenuCheckboxItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
         </CardHeader>
         <CardContent>
           <Table>
