@@ -19,7 +19,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
-import type { Booking, BookingStatus, PaymentStatus } from '@/lib/types';
+import type { Booking, BookingStatus, PaymentStatus, Room } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Edit, Trash, Search } from 'lucide-react';
 import {
@@ -76,7 +76,7 @@ export default function ReservationsPage() {
     if (!firestore) return null;
     return query(collection(firestore, 'rooms'));
   }, [firestore]);
-  const { data: rooms } = useCollection<any>(roomsQuery);
+  const { data: rooms } = useCollection<Room>(roomsQuery);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
@@ -108,6 +108,19 @@ export default function ReservationsPage() {
       }
     }
   }, [searchParams, rooms, prefilled]);
+
+  const availableRoomsForBooking = useMemo(() => {
+    if (!rooms) return [];
+    return rooms.filter(room => {
+      if (room.status === 'Available') {
+        return true;
+      }
+      if (dialogMode === 'edit' && selectedBooking && room.id === selectedBooking.roomId) {
+        return true;
+      }
+      return false;
+    });
+  }, [rooms, dialogMode, selectedBooking]);
 
   const handleOpenAddDialog = () => {
     setDialogMode('add');
@@ -344,7 +357,7 @@ export default function ReservationsPage() {
                       <SelectValue placeholder="Select a room" />
                   </SelectTrigger>
                   <SelectContent>
-                      {rooms?.map(room => (
+                      {availableRoomsForBooking?.map(room => (
                         <SelectItem key={room.id} value={room.id}>
                           Room {room.roomNumber} ({room.type})
                         </SelectItem>
