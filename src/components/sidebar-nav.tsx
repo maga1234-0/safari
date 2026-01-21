@@ -13,7 +13,6 @@ import {
   BedDouble,
   CalendarCheck2,
   Users,
-  CreditCard,
   Bot,
   LogOut,
   Home,
@@ -72,11 +71,6 @@ export function SidebarNav() {
       href: '/configuration',
       icon: <Building />,
       label: 'Hotel Config',
-    },
-    {
-      href: '/billing',
-      icon: <CreditCard />,
-      label: 'Billing',
     },
     {
       href: '/pricing',
