@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -20,7 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import type { StaffMember, StaffRole } from '@/lib/types';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
-import { PlusCircle, Edit, Trash } from 'lucide-react';
+import { PlusCircle, Edit, Trash, Search } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -60,6 +60,7 @@ export default function StaffPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -84,6 +85,7 @@ export default function StaffPage() {
   };
   
   const handleDelete = (staffId: string) => {
+    if (!firestore) return;
     deleteDocumentNonBlocking(doc(firestore, 'staff', staffId));
     toast({
       title: 'Staff Member Deleted',
@@ -92,7 +94,7 @@ export default function StaffPage() {
   };
 
   const handleSave = () => {
-    if (!name || !email || !role) {
+    if (!name || !email || !role || !firestore) {
       toast({
         variant: 'destructive',
         title: 'Missing Information',
@@ -120,14 +122,34 @@ export default function StaffPage() {
     setDialogOpen(false);
   };
 
+  const filteredStaff = useMemo(() => {
+    if (!staff) return [];
+    return staff.filter(staffMember =>
+      staffMember.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      staffMember.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [staff, searchTerm]);
+
   return (
     <div>
       <h1 className="text-3xl font-bold font-headline tracking-tight">Staff Management</h1>
       <p className="text-muted-foreground">Manage staff roles and permissions.</p>
       <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>All Staff Members</CardTitle>
-          <CardDescription>View and manage all staff accounts.</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>All Staff Members</CardTitle>
+            <CardDescription>View and manage all staff accounts.</CardDescription>
+          </div>
+           <div className="relative w-full max-w-sm">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search by name or email..."
+              className="w-full appearance-none bg-background pl-8 shadow-none"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -140,7 +162,7 @@ export default function StaffPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {staff?.map((staffMember) => (
+              {filteredStaff?.map((staffMember) => (
                 <TableRow key={staffMember.id}>
                   <TableCell className="font-medium">{staffMember.name}</TableCell>
                   <TableCell>{staffMember.email}</TableCell>
