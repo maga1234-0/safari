@@ -1,4 +1,5 @@
 import { ProfileSettings } from "@/components/profile-settings";
+import { PasswordSettings } from "@/components/password-settings";
 
 export default function SettingsPage() {
   return (
@@ -7,6 +8,7 @@ export default function SettingsPage() {
       <p className="text-muted-foreground">Manage your account settings.</p>
       <div className="mt-6 grid gap-6">
         <ProfileSettings />
+        <PasswordSettings />
       </div>
     </div>
   );
