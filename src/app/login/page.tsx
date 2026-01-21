@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Compass, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Binoculars, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth, useUser, initiateEmailSignIn } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
@@ -67,7 +67,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="flex justify-center items-center mb-4">
-            <Compass className="h-10 w-10 text-primary" />
+            <Binoculars className="h-10 w-10 text-primary" />
           </div>
           <CardTitle className="text-2xl font-headline">Safari Hotel Manager</CardTitle>
           <CardDescription>Enter your credentials to access the admin panel.</CardDescription>

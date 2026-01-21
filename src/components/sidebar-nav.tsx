@@ -16,7 +16,7 @@ import {
   CreditCard,
   Bot,
   LogOut,
-  Compass,
+  Binoculars,
   UserCog,
   Building,
   Settings,
@@ -102,7 +102,7 @@ export function SidebarNav() {
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <div className="flex items-center gap-2">
-          <Compass className="h-8 w-8 text-sidebar-primary" />
+          <Binoculars className="h-8 w-8 text-sidebar-primary" />
           <h1 className="text-xl font-semibold font-headline text-primary-foreground group-data-[state=collapsed]:hidden">
             Safari
           </h1>
