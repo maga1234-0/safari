@@ -34,11 +34,11 @@ export function ProfileSettings() {
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit, since we resize it
         toast({
           variant: 'destructive',
           title: 'Fichier trop volumineux',
-          description: 'Veuillez sélectionner une image de moins de 2 Mo.',
+          description: 'Veuillez sélectionner une image de moins de 5 Mo.',
         });
         return;
       }
@@ -52,12 +52,42 @@ export function ProfileSettings() {
       }
 
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatar(reader.result as string);
-        toast({
-          title: 'Photo de profil mise à jour',
-          description: 'Votre nouvel avatar est prêt à être enregistré.',
-        });
+      reader.onload = (e) => {
+        if (!e.target?.result) return;
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 256;
+          const MAX_HEIGHT = 256;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+
+          setAvatar(dataUrl);
+          toast({
+            title: 'Photo de profil mise à jour',
+            description: 'Votre nouvel avatar est prêt à être enregistré.',
+          });
+        };
+        img.src = e.target.result as string;
       };
       reader.readAsDataURL(file);
     }
@@ -88,10 +118,10 @@ export function ProfileSettings() {
       let description = 'Une erreur inconnue est survenue. Veuillez réessayer.';
       if (error instanceof FirebaseError) {
         switch (error.code) {
-          case 'auth/argument-error':
-            description = 'L\'URL de la photo de profil semble être invalide. Veuillez réessayer avec une autre image ou actualiser la page.';
+          case 'auth/invalid-profile-attribute':
+             description = "L'URL de la photo est trop longue ou invalide. Veuillez réessayer avec une autre image.";
             break;
-          case 'auth/requires-recent-login':
+          case 'requires-recent-login':
             description = 'Cette action nécessite une connexion récente. Veuillez vous déconnecter et vous reconnecter.';
             break;
           default:
@@ -144,7 +174,7 @@ export function ProfileSettings() {
         </div>
         <div className="w-full space-y-2">
             <Label htmlFor="displayName">Nom d'Affichage</Label>
-            <Input id="displayName" value={name} onChange={(e) => setName(e.target.value)} disabled={isSaving} />
+            <Input id="displayName" value={name || ''} onChange={(e) => setName(e.target.value)} disabled={isSaving} />
         </div>
       </CardContent>
        <CardFooter className="border-t px-6 py-4">
