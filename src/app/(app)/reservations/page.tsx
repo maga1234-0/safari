@@ -279,7 +279,7 @@ export default function ReservationsPage() {
       <h1 className="text-3xl font-bold font-headline tracking-tight">Reservation Management</h1>
       <p className="text-muted-foreground">Create, modify, and cancel reservations.</p>
       <Card className="mt-6">
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle>All Reservations</CardTitle>
             <CardDescription>View and manage all guest reservations.</CardDescription>
@@ -350,18 +350,18 @@ export default function ReservationsPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="clientName" className="text-right">
+            <div className="grid gap-2">
+              <Label htmlFor="clientName">
                 Client Name
               </Label>
-              <Input id="clientName" value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="e.g. John Doe" className="col-span-3" />
+              <Input id="clientName" value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="e.g. John Doe" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="roomNumber" className="text-right">
+            <div className="grid gap-2">
+              <Label htmlFor="roomNumber">
                 Room
               </Label>
               <Select value={roomId} onValueChange={setRoomId}>
-                  <SelectTrigger className="col-span-3">
+                  <SelectTrigger>
                       <SelectValue placeholder="Select a room" />
                   </SelectTrigger>
                   <SelectContent>
@@ -374,8 +374,8 @@ export default function ReservationsPage() {
               </Select>
             </div>
 
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="checkIn" className="text-right">
+            <div className="grid gap-2">
+              <Label htmlFor="checkIn">
                 Check-in
               </Label>
               <Input
@@ -383,12 +383,11 @@ export default function ReservationsPage() {
                 type="date"
                 value={checkIn ? format(checkIn, 'yyyy-MM-dd') : ''}
                 onChange={(e) => setCheckIn(e.target.value ? parse(e.target.value, 'yyyy-MM-dd', new Date()) : undefined)}
-                className="col-span-3"
               />
             </div>
             
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="checkOut" className="text-right">
+            <div className="grid gap-2">
+              <Label htmlFor="checkOut">
                 Check-out
               </Label>
               <Input
@@ -396,16 +395,15 @@ export default function ReservationsPage() {
                 type="date"
                 value={checkOut ? format(checkOut, 'yyyy-MM-dd') : ''}
                 onChange={(e) => setCheckOut(e.target.value ? parse(e.target.value, 'yyyy-MM-dd', new Date()) : undefined)}
-                className="col-span-3"
               />
             </div>
 
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="status" className="text-right">
+            <div className="grid gap-2">
+              <Label htmlFor="status">
                 Status
               </Label>
                <Select value={status} onValueChange={(value: BookingStatus) => setStatus(value)}>
-                  <SelectTrigger className="col-span-3">
+                  <SelectTrigger>
                       <SelectValue placeholder="Select a status" />
                   </SelectTrigger>
                   <SelectContent>

@@ -178,7 +178,7 @@ export default function StaffPage() {
       <h1 className="text-3xl font-bold font-headline tracking-tight">Staff Management</h1>
       <p className="text-muted-foreground">Manage staff roles and permissions.</p>
       <Card className="mt-6">
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle>All Staff Members</CardTitle>
             <CardDescription>View and manage all staff accounts.</CardDescription>
@@ -240,24 +240,24 @@ export default function StaffPage() {
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
+              <div className="grid gap-2">
+                <Label htmlFor="name">
                   Name
                 </Label>
-                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. John Doe" className="col-span-3" />
+                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. John Doe" />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="email" className="text-right">
+              <div className="grid gap-2">
+                <Label htmlFor="email">
                   Email
                 </Label>
-                <Input id="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="e.g. john@safari.com" className="col-span-3" />
+                <Input id="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="e.g. john@safari.com" />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="role" className="text-right">
+              <div className="grid gap-2">
+                <Label htmlFor="role">
                   Role
                 </Label>
                  <Select value={role} onValueChange={(value: StaffRole) => setRole(value)}>
-                    <SelectTrigger className="col-span-3">
+                    <SelectTrigger>
                         <SelectValue placeholder="Select a role" />
                     </SelectTrigger>
                     <SelectContent>
@@ -268,11 +268,11 @@ export default function StaffPage() {
                 </Select>
               </div>
               {dialogMode === 'add' && role === 'Admin' && (
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="password" className="text-right">
+                <div className="grid gap-2">
+                  <Label htmlFor="password">
                     Password
                   </Label>
-                  <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Assign a password" className="col-span-3" />
+                  <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Assign a password" />
                 </div>
               )}
             </div>

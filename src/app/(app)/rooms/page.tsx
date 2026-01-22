@@ -159,7 +159,7 @@ export default function RoomsPage() {
       <h1 className="text-3xl font-bold font-headline tracking-tight">Room Management</h1>
       <p className="text-muted-foreground">Track room availability, status, and details.</p>
       <Card className="mt-6">
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle>All Rooms</CardTitle>
             <CardDescription>View and manage all rooms in the hotel.</CardDescription>
@@ -229,18 +229,18 @@ export default function RoomsPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="roomNumber" className="text-right">
+            <div className="grid gap-2">
+              <Label htmlFor="roomNumber">
                 Room No.
               </Label>
-              <Input id="roomNumber" value={roomNumber} onChange={(e) => setRoomNumber(e.target.value)} type="number" placeholder="e.g. 101" className="col-span-3" />
+              <Input id="roomNumber" value={roomNumber} onChange={(e) => setRoomNumber(e.target.value)} type="number" placeholder="e.g. 101" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="type" className="text-right">
+            <div className="grid gap-2">
+              <Label htmlFor="type">
                 Type
               </Label>
                <Select value={type} onValueChange={(value: Room['type']) => setType(value)}>
-                  <SelectTrigger className="col-span-3">
+                  <SelectTrigger>
                       <SelectValue placeholder="Select a type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -250,12 +250,12 @@ export default function RoomsPage() {
                   </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="status" className="text-right">
+            <div className="grid gap-2">
+              <Label htmlFor="status">
                 Status
               </Label>
                <Select value={status} onValueChange={(value: RoomStatus) => setStatus(value)}>
-                  <SelectTrigger className="col-span-3">
+                  <SelectTrigger>
                       <SelectValue placeholder="Select a status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -265,11 +265,11 @@ export default function RoomsPage() {
                   </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="price" className="text-right">
+            <div className="grid gap-2">
+              <Label htmlFor="price">
                 Price
               </Label>
-              <Input id="price" value={price} onChange={(e) => setPrice(e.target.value)} type="number" placeholder="e.g. 150" className="col-span-3" />
+              <Input id="price" value={price} onChange={(e) => setPrice(e.target.value)} type="number" placeholder="e.g. 150" />
             </div>
           </div>
           <DialogFooter>

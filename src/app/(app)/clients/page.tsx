@@ -145,7 +145,7 @@ export default function ClientsPage() {
       <h1 className="text-3xl font-bold font-headline tracking-tight">Client Management</h1>
       <p className="text-muted-foreground">Maintain client profiles, history, and preferences.</p>
       <Card className="mt-6">
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle>All Clients</CardTitle>
             <CardDescription>View and manage all hotel clients.</CardDescription>
@@ -206,33 +206,33 @@ export default function ClientsPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="firstName" className="text-right">First Name</Label>
-              <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="e.g. John" className="col-span-3" />
+            <div className="grid gap-2">
+              <Label htmlFor="firstName">First Name</Label>
+              <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="e.g. John" />
             </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="lastName" className="text-right">Last Name</Label>
-              <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="e.g. Doe" className="col-span-3" />
+             <div className="grid gap-2">
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="e.g. Doe" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="email" className="text-right">Email</Label>
-              <Input id="email" value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="e.g. john@example.com" className="col-span-3" />
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="e.g. john@example.com" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="phoneNumber" className="text-right">Phone</Label>
-              <Input id="phoneNumber" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="e.g. +1 234 567 890" className="col-span-3" />
+            <div className="grid gap-2">
+              <Label htmlFor="phoneNumber">Phone</Label>
+              <Input id="phoneNumber" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="e.g. +1 234 567 890" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="address" className="text-right">Address</Label>
-              <Textarea id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Client's full address" className="col-span-3" />
+            <div className="grid gap-2">
+              <Label htmlFor="address">Address</Label>
+              <Textarea id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Client's full address" />
             </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="preferences" className="text-right">Preferences</Label>
-              <Textarea id="preferences" value={preferences} onChange={(e) => setPreferences(e.target.value)} placeholder="e.g. High floor, non-smoking" className="col-span-3" />
+             <div className="grid gap-2">
+              <Label htmlFor="preferences">Preferences</Label>
+              <Textarea id="preferences" value={preferences} onChange={(e) => setPreferences(e.target.value)} placeholder="e.g. High floor, non-smoking" />
             </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="notes" className="text-right">Notes</Label>
-              <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any other relevant notes" className="col-span-3" />
+             <div className="grid gap-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any other relevant notes" />
             </div>
           </div>
           <DialogFooter>
