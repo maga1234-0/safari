@@ -156,8 +156,8 @@ export default function Dashboard() {
     const yearEnd = endOfYear(new Date());
 
     const monthLabels = [
-      'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 
-      'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'
+      'Janv.', 'Févr.', 'Mars', 'Avril', 'Mai', 'Juin', 
+      'Juil.', 'Août', 'Sept.', 'Oct.', 'Nov.', 'Déc.'
     ];
     
     const monthlyTotals = monthLabels.reduce((acc, month) => {
@@ -295,7 +295,6 @@ export default function Dashboard() {
                     tickLine={false}
                     tickMargin={10}
                     axisLine={false}
-                    tickFormatter={(value) => value.slice(0, 3)}
                     />
                     <YAxis
                     tickFormatter={(value) => `$${Number(value) / 1000}k`}
