@@ -235,7 +235,7 @@ export default function ClientsPage() {
               {dialogMode === 'add' ? "Remplissez les détails pour ajouter un nouveau client." : `Modification des détails pour ${selectedClient?.firstName} ${selectedClient?.lastName}.`}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-2 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="firstName">Prénom</Label>
@@ -256,15 +256,15 @@ export default function ClientsPage() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="address">Adresse</Label>
-              <Textarea id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Adresse complète du client" rows={2} />
+              <Textarea id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Adresse complète du client" rows={1} />
             </div>
              <div className="grid gap-2">
               <Label htmlFor="preferences">Préférences</Label>
-              <Textarea id="preferences" value={preferences} onChange={(e) => setPreferences(e.target.value)} placeholder="e.g. Étage élevé, non-fumeur" rows={2} />
+              <Textarea id="preferences" value={preferences} onChange={(e) => setPreferences(e.target.value)} placeholder="e.g. Étage élevé, non-fumeur" rows={1} />
             </div>
              <div className="grid gap-2">
               <Label htmlFor="notes">Remarques</Label>
-              <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Toutes autres remarques pertinentes" rows={2} />
+              <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Toutes autres remarques pertinentes" rows={1} />
             </div>
           </div>
           <DialogFooter>
