@@ -153,7 +153,7 @@ export function PricingOptimizer() {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid gap-6 md:grid-cols-2">
       <Card>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -260,7 +260,7 @@ export function PricingOptimizer() {
             <div className="space-y-4 text-sm">
                 <div className="text-center">
                     <p className="text-muted-foreground">Suggested Price</p>
-                    <p className="text-5xl font-bold text-primary font-headline">${result.suggestedPrice.toFixed(2)}</p>
+                    <p className="text-4xl font-bold text-primary font-headline md:text-5xl">${result.suggestedPrice.toFixed(2)}</p>
                 </div>
                 <div>
                     <h4 className="font-semibold mb-2">Reasoning:</h4>

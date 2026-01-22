@@ -277,7 +277,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
-      <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 md:gap-6 md:grid-cols-2">
         <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle className="font-headline">Revenue Overview</CardTitle>
