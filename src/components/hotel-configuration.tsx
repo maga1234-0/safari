@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -13,22 +13,65 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { hotelConfig as initialHotelConfig } from '@/lib/data';
-import { Save } from 'lucide-react';
+import { Save, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useFirestore, useDoc, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { HotelConfig } from '@/lib/types';
+import { hotelConfig as initialHotelConfig } from '@/lib/data';
+
+const CONFIG_DOC_ID = 'main';
 
 export function HotelConfiguration() {
   const { toast } = useToast();
+  const firestore = useFirestore();
+
+  const configDocRef = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return doc(firestore, 'configuration', CONFIG_DOC_ID);
+  }, [firestore]);
+
+  const { data: configData, isLoading } = useDoc<HotelConfig>(configDocRef);
+
   const [taxRate, setTaxRate] = useState(initialHotelConfig.taxRate);
   const [bookingPolicy, setBookingPolicy] = useState(initialHotelConfig.bookingPolicy);
 
+  useEffect(() => {
+    if (configData) {
+      setTaxRate(configData.taxRate);
+      setBookingPolicy(configData.bookingPolicy);
+    }
+  }, [configData]);
+
   const handleSave = () => {
-    // In a real app, this would persist to a database. For now, we show a toast.
+    if (!firestore || !configDocRef) return;
+    
+    const newConfig = {
+        taxRate,
+        bookingPolicy
+    };
+
+    setDocumentNonBlocking(configDocRef, newConfig, { merge: true });
+    
     toast({
       title: 'Paramètres Sauvegardés',
       description: "Les paramètres de l'hôtel ont été mis à jour.",
     });
   };
+  
+  if (isLoading) {
+      return (
+          <Card>
+              <CardHeader>
+                <CardTitle>Configuration de l'Hôtel</CardTitle>
+                <CardDescription>Chargement des paramètres...</CardDescription>
+              </CardHeader>
+              <CardContent className="flex justify-center items-center p-10">
+                  <Loader2 className="h-8 w-8 animate-spin" />
+              </CardContent>
+          </Card>
+      );
+  }
 
   return (
     <Card>

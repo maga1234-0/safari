@@ -27,6 +27,11 @@ service cloud.firestore {
       return isStaff() || isAdmin();
     }
 
+    match /configuration/{configId} {
+      allow read: if isStaffOrAdmin();
+      allow write: if isAdmin();
+    }
+
     match /clients/{clientId} {
       allow read, write: if isOwner(clientId) || isStaffOrAdmin();
       allow list: if isStaffOrAdmin();
