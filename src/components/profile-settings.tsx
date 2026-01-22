@@ -85,9 +85,18 @@ export function ProfileSettings() {
         description: 'Votre profil a été mis à jour.',
       });
     } catch (error) {
-      let description = 'Une erreur inconnue est survenue.';
+      let description = 'Une erreur inconnue est survenue. Veuillez réessayer.';
       if (error instanceof FirebaseError) {
-          description = 'Une erreur est survenue lors de la mise à jour de votre profil.';
+        switch (error.code) {
+          case 'auth/argument-error':
+            description = 'L\'URL de la photo de profil semble être invalide. Veuillez réessayer avec une autre image ou actualiser la page.';
+            break;
+          case 'auth/requires-recent-login':
+            description = 'Cette action nécessite une connexion récente. Veuillez vous déconnecter et vous reconnecter.';
+            break;
+          default:
+            description = `Une erreur est survenue lors de la mise à jour: ${error.message}`;
+        }
       }
       toast({
         variant: 'destructive',
