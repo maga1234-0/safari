@@ -115,7 +115,7 @@ export function PricingOptimizer() {
       const currentTrendsText = `The room is currently ${room.status}. The hotel has ${upcomingBookingsCount} upcoming reservations. `;
       form.setValue('currentBookingTrends', currentTrendsText + 'Consider competitor pricing, city-wide occupancy, and local events.', { shouldValidate: true });
     }
-  }, [selectedRoomId, rooms, bookings, form]);
+  }, [selectedRoomId, rooms, bookings]);
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
