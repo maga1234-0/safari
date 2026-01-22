@@ -176,42 +176,76 @@ export default function RoomsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Room No.</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredRooms?.map((room) => (
-                <TableRow key={room.id}>
-                  <TableCell className="font-medium">{room.roomNumber}</TableCell>
-                  <TableCell>{room.type}</TableCell>
-                  <TableCell>
-                    <Badge variant={roomStatusVariant[room.status]}>
-                      {room.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>${room.price.toFixed(2)}</TableCell>
-                  <TableCell className="text-right">
+          {/* Mobile View */}
+          <div className="grid gap-4 md:hidden">
+            {filteredRooms?.map((room) => (
+              <Card key={room.id}>
+                <CardHeader className="flex flex-row items-center justify-between p-4">
+                  <div>
+                    <CardTitle className="text-lg">Room {room.roomNumber}</CardTitle>
+                    <CardDescription>{room.type}</CardDescription>
+                  </div>
+                  <div className="text-lg font-bold">${room.price.toFixed(2)}</div>
+                </CardHeader>
+                <CardContent className="p-4 pt-0">
+                  <Badge variant={roomStatusVariant[room.status]}>{room.status}</Badge>
+                </CardContent>
+                <CardFooter className="p-4 pt-0 flex justify-between items-center">
+                    <div>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(room)}>
+                          <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(room.id)}>
+                          <Trash className="h-4 w-4" />
+                      </Button>
+                    </div>
                     {room.status === 'Available' && (
-                        <Button onClick={() => handleBookNow(room)} size="sm" className="mr-2">Book Now</Button>
+                        <Button onClick={() => handleBookNow(room)} size="sm">Book Now</Button>
                     )}
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(room)}>
-                        <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(room.id)}>
-                        <Trash className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+
+          {/* Desktop View */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Room No.</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredRooms?.map((room) => (
+                  <TableRow key={room.id}>
+                    <TableCell className="font-medium">{room.roomNumber}</TableCell>
+                    <TableCell>{room.type}</TableCell>
+                    <TableCell>
+                      <Badge variant={roomStatusVariant[room.status]}>
+                        {room.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>${room.price.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">
+                      {room.status === 'Available' && (
+                          <Button onClick={() => handleBookNow(room)} size="sm" className="mr-2">Book Now</Button>
+                      )}
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(room)}>
+                          <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(room.id)}>
+                          <Trash className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
          <CardFooter className="border-t px-6 py-4">
           <Button onClick={handleOpenAddDialog}>

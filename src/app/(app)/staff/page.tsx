@@ -195,35 +195,63 @@ export default function StaffPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredStaff?.map((staffMember) => (
-                <TableRow key={staffMember.id}>
-                  <TableCell className="font-medium">{staffMember.name}</TableCell>
-                  <TableCell>{staffMember.email}</TableCell>
-                  <TableCell>
-                    <Badge variant={roleVariant[staffMember.role]}>{staffMember.role}</Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(staffMember)}>
-                          <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(staffMember.id)}>
-                          <Trash className="h-4 w-4" />
-                      </Button>
-                  </TableCell>
+          {/* Mobile View */}
+          <div className="grid gap-4 md:hidden">
+            {filteredStaff?.map((staffMember) => (
+              <Card key={staffMember.id}>
+                <CardHeader className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">{staffMember.name}</CardTitle>
+                        <CardDescription>{staffMember.email}</CardDescription>
+                      </div>
+                      <Badge variant={roleVariant[staffMember.role]}>{staffMember.role}</Badge>
+                    </div>
+                </CardHeader>
+                <CardFooter className="p-4 pt-0 flex justify-end gap-2">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(staffMember)}>
+                      <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(staffMember.id)}>
+                      <Trash className="h-4 w-4" />
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+
+          {/* Desktop View */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredStaff?.map((staffMember) => (
+                  <TableRow key={staffMember.id}>
+                    <TableCell className="font-medium">{staffMember.name}</TableCell>
+                    <TableCell>{staffMember.email}</TableCell>
+                    <TableCell>
+                      <Badge variant={roleVariant[staffMember.role]}>{staffMember.role}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(staffMember)}>
+                            <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(staffMember.id)}>
+                            <Trash className="h-4 w-4" />
+                        </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
         <CardFooter className="border-t px-6 py-4">
           <Button onClick={handleOpenAddDialog}>

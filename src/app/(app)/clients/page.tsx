@@ -162,33 +162,59 @@ export default function ClientsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Phone Number</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredClients?.map((client) => (
-                <TableRow key={client.id}>
-                  <TableCell className="font-medium">{`${client.firstName} ${client.lastName}`}</TableCell>
-                  <TableCell>{client.email}</TableCell>
-                  <TableCell>{client.phoneNumber}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(client)}>
-                        <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(client.id)}>
-                        <Trash className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
+          {/* Mobile view */}
+          <div className="grid gap-4 md:hidden">
+            {filteredClients?.map((client) => (
+              <Card key={client.id}>
+                <CardHeader className="p-4">
+                  <CardTitle className="text-lg">{`${client.firstName} ${client.lastName}`}</CardTitle>
+                  <CardDescription>{client.email}</CardDescription>
+                </CardHeader>
+                <CardContent className="p-4 pt-0">
+                  <p className="text-sm text-muted-foreground">{client.phoneNumber}</p>
+                </CardContent>
+                <CardFooter className="p-4 pt-0 flex justify-end gap-2">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(client)}>
+                      <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(client.id)}>
+                      <Trash className="h-4 w-4" />
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+
+          {/* Desktop view */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Phone Number</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredClients?.map((client) => (
+                  <TableRow key={client.id}>
+                    <TableCell className="font-medium">{`${client.firstName} ${client.lastName}`}</TableCell>
+                    <TableCell>{client.email}</TableCell>
+                    <TableCell>{client.phoneNumber}</TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(client)}>
+                          <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(client.id)}>
+                          <Trash className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
          <CardFooter className="border-t px-6 py-4">
           <Button onClick={handleOpenAddDialog}>

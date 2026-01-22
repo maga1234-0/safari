@@ -296,43 +296,86 @@ export default function ReservationsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Client</TableHead>
-                <TableHead>Room No.</TableHead>
-                <TableHead>Check-in</TableHead>
-                <TableHead>Check-out</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredBookings?.map((booking) => (
-                <TableRow key={booking.id}>
-                  <TableCell className="font-medium">{booking.clientName}</TableCell>
-                  <TableCell>{booking.roomNumber}</TableCell>
-                  <TableCell>{format(toDateSafe(booking.checkIn), 'MM/dd/yyyy')}</TableCell>
-                  <TableCell>{format(toDateSafe(booking.checkOut), 'MM/dd/yyyy')}</TableCell>
-                  <TableCell>
-                    <Badge variant={bookingStatusVariant[booking.status]}>
-                      {booking.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>${calculateTotal(booking).toFixed(2)}</TableCell>
-                  <TableCell className="text-right">
+          {/* Mobile view */}
+          <div className="grid gap-4 md:hidden">
+            {filteredBookings?.map((booking) => (
+            <Card key={booking.id}>
+                <CardHeader className="p-4">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <CardTitle className="text-lg">{booking.clientName}</CardTitle>
+                            <CardDescription>Room {booking.roomNumber}</CardDescription>
+                        </div>
+                        <Badge variant={bookingStatusVariant[booking.status]}>
+                            {booking.status}
+                        </Badge>
+                    </div>
+                </CardHeader>
+                <CardContent className="p-4 pt-0 space-y-2">
+                    <div className="text-sm text-muted-foreground">
+                        <span className="font-medium text-foreground">Check-in: </span>
+                        {format(toDateSafe(booking.checkIn), 'EEE, MMM d, yyyy')}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                        <span className="font-medium text-foreground">Check-out: </span>
+                        {format(toDateSafe(booking.checkOut), 'EEE, MMM d, yyyy')}
+                    </div>
+                    <div className="text-lg font-bold text-right">
+                        ${calculateTotal(booking).toFixed(2)}
+                    </div>
+                </CardContent>
+                <CardFooter className="p-4 pt-0 flex justify-end gap-2">
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(booking)}>
                         <Edit className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(booking)}>
                         <Trash className="h-4 w-4" />
                     </Button>
-                  </TableCell>
+                </CardFooter>
+            </Card>
+            ))}
+          </div>
+
+          {/* Desktop view */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Client</TableHead>
+                  <TableHead>Room No.</TableHead>
+                  <TableHead>Check-in</TableHead>
+                  <TableHead>Check-out</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Total</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredBookings?.map((booking) => (
+                  <TableRow key={booking.id}>
+                    <TableCell className="font-medium">{booking.clientName}</TableCell>
+                    <TableCell>{booking.roomNumber}</TableCell>
+                    <TableCell>{format(toDateSafe(booking.checkIn), 'MM/dd/yyyy')}</TableCell>
+                    <TableCell>{format(toDateSafe(booking.checkOut), 'MM/dd/yyyy')}</TableCell>
+                    <TableCell>
+                      <Badge variant={bookingStatusVariant[booking.status]}>
+                        {booking.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>${calculateTotal(booking).toFixed(2)}</TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(booking)}>
+                          <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(booking)}>
+                          <Trash className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
         <CardFooter className="border-t px-6 py-4">
           <Button onClick={handleOpenAddDialog}>
