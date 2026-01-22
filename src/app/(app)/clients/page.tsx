@@ -228,7 +228,7 @@ export default function ClientsPage() {
       </Card>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{dialogMode === 'add' ? 'Ajouter un Nouveau Client' : 'Modifier le Client'}</DialogTitle>
             <DialogDescription>
@@ -236,13 +236,15 @@ export default function ClientsPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="firstName">Prénom</Label>
-              <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="e.g. John" />
-            </div>
-             <div className="grid gap-2">
-              <Label htmlFor="lastName">Nom de famille</Label>
-              <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="e.g. Doe" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="firstName">Prénom</Label>
+                <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="e.g. John" />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="lastName">Nom de famille</Label>
+                <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="e.g. Doe" />
+              </div>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
@@ -254,15 +256,15 @@ export default function ClientsPage() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="address">Adresse</Label>
-              <Textarea id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Adresse complète du client" />
+              <Textarea id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Adresse complète du client" rows={2} />
             </div>
              <div className="grid gap-2">
               <Label htmlFor="preferences">Préférences</Label>
-              <Textarea id="preferences" value={preferences} onChange={(e) => setPreferences(e.target.value)} placeholder="e.g. Étage élevé, non-fumeur" />
+              <Textarea id="preferences" value={preferences} onChange={(e) => setPreferences(e.target.value)} placeholder="e.g. Étage élevé, non-fumeur" rows={2} />
             </div>
              <div className="grid gap-2">
               <Label htmlFor="notes">Remarques</Label>
-              <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Toutes autres remarques pertinentes" />
+              <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Toutes autres remarques pertinentes" rows={2} />
             </div>
           </div>
           <DialogFooter>
