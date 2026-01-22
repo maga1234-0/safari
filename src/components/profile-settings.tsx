@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, ChangeEvent } from 'react';
+import { useRef, ChangeEvent, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -13,14 +13,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Edit, Save } from 'lucide-react';
+import { Edit, Save, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/context/user-context';
+import { useUser as useAppUser } from '@/context/user-context';
+import { useUser as useFirebaseAuthUser } from '@/firebase';
+import { updateProfile } from 'firebase/auth';
+import { FirebaseError } from 'firebase/app';
 
 export function ProfileSettings() {
-  const { avatar, setAvatar, name, setName } = useUser();
+  const { avatar, setAvatar, name, setName } = useAppUser();
+  const { user: firebaseUser } = useFirebaseAuthUser();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -58,14 +63,46 @@ export function ProfileSettings() {
     }
   };
   
-  const handleSave = () => {
-    // In a real app, this would persist to a database.
-    // Here it's just confirming the context state is what we want.
-    toast({
-      title: 'Profil Enregistré',
-      description: 'Votre profil a été mis à jour.',
-    });
+  const handleSave = async () => {
+    if (!firebaseUser) {
+      toast({
+        variant: 'destructive',
+        title: 'Erreur',
+        description: 'Utilisateur non authentifié.',
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await updateProfile(firebaseUser, {
+        displayName: name,
+        photoURL: avatar,
+      });
+
+      toast({
+        title: 'Profil Enregistré',
+        description: 'Votre profil a été mis à jour.',
+      });
+    } catch (error) {
+      let description = 'Une erreur inconnue est survenue.';
+      if (error instanceof FirebaseError) {
+          description = 'Une erreur est survenue lors de la mise à jour de votre profil.';
+      }
+      toast({
+        variant: 'destructive',
+        title: 'Échec de la sauvegarde',
+        description,
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return '';
+    return name.split(' ').map(n => n[0]).join('').substring(0, 2);
+  }
 
   return (
     <Card>
@@ -77,7 +114,7 @@ export function ProfileSettings() {
         <div className="relative">
           <Avatar className="h-24 w-24">
             <AvatarImage src={avatar} alt="User avatar" />
-            <AvatarFallback>{name?.[0]}</AvatarFallback>
+            <AvatarFallback>{getInitials(name)}</AvatarFallback>
           </Avatar>
           <Button
             variant="outline"
@@ -98,12 +135,13 @@ export function ProfileSettings() {
         </div>
         <div className="w-full space-y-2">
             <Label htmlFor="displayName">Nom d'Affichage</Label>
-            <Input id="displayName" value={name} onChange={(e) => setName(e.target.value)} />
+            <Input id="displayName" value={name} onChange={(e) => setName(e.target.value)} disabled={isSaving} />
         </div>
       </CardContent>
        <CardFooter className="border-t px-6 py-4">
-        <Button onClick={handleSave}>
-          <Save className="mr-2 h-4 w-4" /> Sauvegarder les Modifications
+        <Button onClick={handleSave} disabled={isSaving}>
+          {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+          {isSaving ? 'Enregistrement...' : 'Sauvegarder les Modifications'}
         </Button>
       </CardFooter>
     </Card>
