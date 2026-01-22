@@ -181,7 +181,7 @@ export default function RoomsPage() {
             {filteredRooms?.map((room, index) => (
               <Card
                 key={room.id}
-                className="animate-slide-in-from-bottom transition-shadow duration-300 hover:shadow-lg"
+                className="animate-slide-in-from-bottom transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
                 style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
               >
                 <CardHeader className="flex flex-row items-center justify-between p-4">
@@ -224,8 +224,8 @@ export default function RoomsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredRooms?.map((room) => (
-                  <TableRow key={room.id}>
+                {filteredRooms?.map((room, index) => (
+                  <TableRow key={room.id} className="animate-slide-in-from-bottom" style={{ animationDelay: `${index * 30}ms`, animationFillMode: 'backwards' }}>
                     <TableCell className="font-medium">{room.roomNumber}</TableCell>
                     <TableCell>{room.type}</TableCell>
                     <TableCell>

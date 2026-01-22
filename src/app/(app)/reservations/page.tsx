@@ -301,7 +301,7 @@ export default function ReservationsPage() {
             {filteredBookings?.map((booking, index) => (
             <Card
               key={booking.id}
-              className="animate-slide-in-from-bottom transition-shadow duration-300 hover:shadow-lg"
+              className="animate-slide-in-from-bottom transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
               style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
             >
                 <CardHeader className="p-4">
@@ -355,8 +355,8 @@ export default function ReservationsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredBookings?.map((booking) => (
-                  <TableRow key={booking.id}>
+                {filteredBookings?.map((booking, index) => (
+                  <TableRow key={booking.id} className="animate-slide-in-from-bottom" style={{ animationDelay: `${index * 30}ms`, animationFillMode: 'backwards' }}>
                     <TableCell className="font-medium">{booking.clientName}</TableCell>
                     <TableCell>{booking.roomNumber}</TableCell>
                     <TableCell>{format(toDateSafe(booking.checkIn), 'dd/MM/yyyy')}</TableCell>

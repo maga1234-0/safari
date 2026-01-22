@@ -167,7 +167,7 @@ export default function ClientsPage() {
             {filteredClients?.map((client, index) => (
               <Card
                 key={client.id}
-                className="animate-slide-in-from-bottom transition-shadow duration-300 hover:shadow-lg"
+                className="animate-slide-in-from-bottom transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
                 style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
               >
                 <CardHeader className="p-4">
@@ -201,8 +201,8 @@ export default function ClientsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredClients?.map((client) => (
-                  <TableRow key={client.id}>
+                {filteredClients?.map((client, index) => (
+                  <TableRow key={client.id} className="animate-slide-in-from-bottom" style={{ animationDelay: `${index * 30}ms`, animationFillMode: 'backwards' }}>
                     <TableCell className="font-medium">{`${client.firstName} ${client.lastName}`}</TableCell>
                     <TableCell>{client.email}</TableCell>
                     <TableCell>{client.phoneNumber}</TableCell>

@@ -327,8 +327,8 @@ export default function Dashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {recentBookings.map((booking) => (
-                  <TableRow key={booking.id}>
+                {recentBookings.map((booking, index) => (
+                  <TableRow key={booking.id} className="animate-slide-in-from-bottom" style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}>
                     <TableCell>
                       <div className="font-medium">{booking.clientName}</div>
                     </TableCell>

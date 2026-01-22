@@ -200,7 +200,7 @@ export default function StaffPage() {
             {filteredStaff?.map((staffMember, index) => (
               <Card
                 key={staffMember.id}
-                className="animate-slide-in-from-bottom transition-shadow duration-300 hover:shadow-lg"
+                className="animate-slide-in-from-bottom transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
                 style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
               >
                 <CardHeader className="p-4">
@@ -236,8 +236,8 @@ export default function StaffPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredStaff?.map((staffMember) => (
-                  <TableRow key={staffMember.id}>
+                {filteredStaff?.map((staffMember, index) => (
+                  <TableRow key={staffMember.id} className="animate-slide-in-from-bottom" style={{ animationDelay: `${index * 30}ms`, animationFillMode: 'backwards' }}>
                     <TableCell className="font-medium">{staffMember.name}</TableCell>
                     <TableCell>{staffMember.email}</TableCell>
                     <TableCell>
