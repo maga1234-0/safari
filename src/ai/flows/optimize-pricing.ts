@@ -13,7 +13,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const OptimizePricingInputSchema = z.object({
-  roomId: z.string().describe('The ID of the room to optimize pricing for.'),
+  roomId: z.string().describe('The name or number of the room to optimize pricing for (e.g., "Room 101").'),
   historicalData: z.string().describe('Historical booking data for the room, including dates, prices, and occupancy rates.'),
   currentBookingTrends: z.string().describe('Current booking trends, including demand, competitor pricing, and seasonal factors.'),
 });
@@ -35,9 +35,11 @@ const prompt = ai.definePrompt({
   output: {schema: OptimizePricingOutputSchema},
   prompt: `You are an AI-powered pricing optimization expert for hotels.
 
-You are provided with historical booking data and current booking trends.
+You are provided with information about a specific room, its historical booking data, and current booking trends.
 
-Based on this information, you will suggest an optimized price for the room to maximize revenue.
+Room for optimization: {{{roomId}}}
+
+Based on all this information, you will suggest an optimized price for the room to maximize revenue.
 
 Historical Data: {{{historicalData}}}
 Current Booking Trends: {{{currentBookingTrends}}}

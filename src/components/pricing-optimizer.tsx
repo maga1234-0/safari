@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -74,7 +74,7 @@ export function PricingOptimizer() {
 
   const selectedRoomId = form.watch('roomId');
 
-  useEffect(() => {
+  const generateAndSetData = useCallback(() => {
     if (selectedRoomId && rooms && bookings) {
       const room = rooms.find(r => r.id === selectedRoomId);
       if (!room) return;
@@ -115,14 +115,29 @@ export function PricingOptimizer() {
       const currentTrendsText = `The room is currently ${room.status}. The hotel has ${upcomingBookingsCount} upcoming reservations. `;
       form.setValue('currentBookingTrends', currentTrendsText + 'Consider competitor pricing, city-wide occupancy, and local events.', { shouldValidate: true });
     }
-  }, [selectedRoomId, rooms, bookings]);
+  }, [selectedRoomId, rooms, bookings, form]);
+
+
+  useEffect(() => {
+    generateAndSetData();
+  }, [generateAndSetData]);
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     setResult(null);
     try {
-      const room = rooms?.find(r => r.id === values.roomId);
+      if (!rooms || !bookings) {
+        toast({
+          variant: 'destructive',
+          title: 'Data not ready',
+          description: 'Room and booking data is still loading. Please try again in a moment.',
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      const room = rooms.find(r => r.id === values.roomId);
       if(!room) {
         toast({
           variant: 'destructive',
