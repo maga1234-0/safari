@@ -13,12 +13,10 @@ import {
   BedDouble,
   CalendarCheck2,
   Users,
-  Bot,
   LogOut,
   Home,
   UserCog,
   Building,
-  Settings,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -71,11 +69,6 @@ export function SidebarNav() {
       href: '/configuration',
       icon: <Building />,
       label: 'Hotel Config',
-    },
-    {
-      href: '/pricing',
-      icon: <Bot />,
-      label: 'Pricing Optimizer',
     },
   ];
 
