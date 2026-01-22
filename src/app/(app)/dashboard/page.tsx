@@ -201,7 +201,7 @@ export default function Dashboard() {
   return (
     <div className="grid flex-1 items-start gap-4 sm:gap-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card className="animate-slide-in-from-top transition-transform duration-300 hover:-translate-y-1">
+        <Card className="animate-slide-in-from-top shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Revenu Total
@@ -217,7 +217,7 @@ export default function Dashboard() {
             </p>
           </CardContent>
         </Card>
-        <Card className="animate-slide-in-from-top transition-transform duration-300 hover:-translate-y-1" style={{ animationDelay: '100ms', animationFillMode: 'backwards' }}>
+        <Card className="animate-slide-in-from-top shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl" style={{ animationDelay: '100ms', animationFillMode: 'backwards' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Chambres Disponibles</CardTitle>
             <Bed className="h-4 w-4 text-muted-foreground" />
@@ -229,7 +229,7 @@ export default function Dashboard() {
             </p>
           </CardContent>
         </Card>
-        <Card className="animate-slide-in-from-top transition-transform duration-300 hover:-translate-y-1" style={{ animationDelay: '200ms', animationFillMode: 'backwards' }}>
+        <Card className="animate-slide-in-from-top shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl" style={{ animationDelay: '200ms', animationFillMode: 'backwards' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Chambres Occupées</CardTitle>
             <BedDouble className="h-4 w-4 text-muted-foreground" />
@@ -241,7 +241,7 @@ export default function Dashboard() {
             </p>
           </CardContent>
         </Card>
-        <Card className="animate-slide-in-from-top transition-transform duration-300 hover:-translate-y-1" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
+        <Card className="animate-slide-in-from-top shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">En Maintenance</CardTitle>
             <Wrench className="h-4 w-4 text-muted-foreground" />
@@ -253,7 +253,7 @@ export default function Dashboard() {
             </p>
           </CardContent>
         </Card>
-        <Card className="animate-slide-in-from-top transition-transform duration-300 hover:-translate-y-1" style={{ animationDelay: '400ms', animationFillMode: 'backwards' }}>
+        <Card className="animate-slide-in-from-top shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl" style={{ animationDelay: '400ms', animationFillMode: 'backwards' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Nouvelles Réservations Aujourd'hui</CardTitle>
             <CalendarPlus className="h-4 w-4 text-muted-foreground" />
@@ -267,7 +267,7 @@ export default function Dashboard() {
             </p>
           </CardContent>
         </Card>
-        <Card className="animate-slide-in-from-top transition-transform duration-300 hover:-translate-y-1" style={{ animationDelay: '500ms', animationFillMode: 'backwards' }}>
+        <Card className="animate-slide-in-from-top shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl" style={{ animationDelay: '500ms', animationFillMode: 'backwards' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total des Chambres</CardTitle>
             <Building className="h-4 w-4 text-muted-foreground" />

@@ -200,7 +200,7 @@ export default function StaffPage() {
             {filteredStaff?.map((staffMember, index) => (
               <Card
                 key={staffMember.id}
-                className="animate-slide-in-from-bottom transition-shadow duration-300 hover:shadow-md"
+                className="animate-slide-in-from-bottom transition-shadow duration-300 hover:shadow-lg"
                 style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
               >
                 <CardHeader className="p-4">

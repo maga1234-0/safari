@@ -181,7 +181,7 @@ export default function RoomsPage() {
             {filteredRooms?.map((room, index) => (
               <Card
                 key={room.id}
-                className="animate-slide-in-from-bottom transition-shadow duration-300 hover:shadow-md"
+                className="animate-slide-in-from-bottom transition-shadow duration-300 hover:shadow-lg"
                 style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
               >
                 <CardHeader className="flex flex-row items-center justify-between p-4">
