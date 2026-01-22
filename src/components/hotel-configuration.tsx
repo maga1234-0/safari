@@ -19,22 +19,22 @@ export function HotelConfiguration() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Hotel Configuration</CardTitle>
-        <CardDescription>Configure hotel-wide settings.</CardDescription>
+        <CardTitle>Configuration de l'Hôtel</CardTitle>
+        <CardDescription>Configurer les paramètres de l'hôtel.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-            <Label htmlFor="taxRate">Tax Rate (%)</Label>
+            <Label htmlFor="taxRate">Taux de Taxe (%)</Label>
             <Input id="taxRate" type="number" defaultValue={hotelConfig.taxRate} />
         </div>
         <div className="space-y-2">
-            <Label htmlFor="bookingPolicy">Booking Policy</Label>
+            <Label htmlFor="bookingPolicy">Politique de Réservation</Label>
             <Textarea id="bookingPolicy" defaultValue={hotelConfig.bookingPolicy} rows={5} />
         </div>
       </CardContent>
        <CardFooter className="border-t px-6 py-4">
         <Button>
-          <Save className="mr-2 h-4 w-4" /> Save Settings
+          <Save className="mr-2 h-4 w-4" /> Sauvegarder les Paramètres
         </Button>
       </CardFooter>
     </Card>

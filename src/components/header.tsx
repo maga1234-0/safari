@@ -66,7 +66,7 @@ export function Header() {
           >
             <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
+            <span className="sr-only">Changer de thème</span>
           </Button>
       ) : <Skeleton className="h-8 w-8" />}
 
@@ -81,7 +81,7 @@ export function Header() {
               </span>
             )}
             <Bell className="h-4 w-4" />
-            <span className="sr-only">Toggle notifications</span>
+            <span className="sr-only">Basculer les notifications</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-80">
@@ -98,11 +98,11 @@ export function Header() {
               ))}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={clearNotifications} className="justify-center cursor-pointer">
-                Clear all
+                Tout effacer
               </DropdownMenuItem>
             </>
           ) : (
-            <DropdownMenuItem disabled>No new notifications</DropdownMenuItem>
+            <DropdownMenuItem disabled>Aucune nouvelle notification</DropdownMenuItem>
           )}
         </DropdownMenuContent>
       </DropdownMenu>
@@ -118,16 +118,16 @@ export function Header() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>{firebaseUser.displayName || name} Account</DropdownMenuLabel>
+            <DropdownMenuLabel>Compte {firebaseUser.displayName || name}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => router.push('/settings')}>
               <User className="mr-2" />
-              Settings
+              Paramètres
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2" />
-              Logout
+              Déconnexion
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

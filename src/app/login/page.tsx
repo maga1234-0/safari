@@ -34,16 +34,16 @@ export default function LoginPage() {
       await initiateEmailSignIn(auth, email, password);
       // On success, onAuthStateChanged will trigger the redirect.
     } catch (error) {
-      let description = "An unknown error occurred. Please try again.";
+      let description = "Une erreur inconnue est survenue. Veuillez réessayer.";
       if (error instanceof FirebaseError) {
         description =
           error.code === 'auth/invalid-credential'
-            ? 'Invalid email or password. Please try again.'
+            ? 'Email ou mot de passe invalide. Veuillez réessayer.'
             : error.message;
       }
       toast({
         variant: 'destructive',
-        title: 'Login Failed',
+        title: 'Échec de la Connexion',
         description: description,
       });
       setIsLoggingIn(false);
@@ -70,7 +70,7 @@ export default function LoginPage() {
             <Home className="h-10 w-10 text-primary" />
           </div>
           <CardTitle className="text-2xl font-headline">PMS safari</CardTitle>
-          <CardDescription>Enter your credentials to access the admin panel.</CardDescription>
+          <CardDescription>Entrez vos identifiants pour accéder au panneau d'administration.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
@@ -86,7 +86,7 @@ export default function LoginPage() {
             </div>
             <div className="grid gap-2">
               <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Mot de passe</Label>
               </div>
               <div className="relative">
                 <Input 
@@ -109,13 +109,13 @@ export default function LoginPage() {
                   ) : (
                     <Eye className="h-4 w-4 text-gray-500" />
                   )}
-                  <span className="sr-only">Toggle password visibility</span>
+                  <span className="sr-only">Basculer la visibilité du mot de passe</span>
                 </Button>
               </div>
             </div>
             <Button onClick={handleLogin} disabled={isLoggingIn} className="w-full mt-2">
               {isLoggingIn && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isLoggingIn ? 'Logging in...' : 'Login'}
+              {isLoggingIn ? 'Connexion en cours...' : 'Connexion'}
             </Button>
           </div>
         </CardContent>

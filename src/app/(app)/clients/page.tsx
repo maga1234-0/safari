@@ -89,8 +89,8 @@ export default function ClientsPage() {
     if (!firestore) return;
     deleteDocumentNonBlocking(doc(firestore, 'clients', clientId));
     toast({
-      title: 'Client Deleted',
-      description: 'The client has been removed from the database.',
+      title: 'Client Supprimé',
+      description: 'Le client a été retiré de la base de données.',
     });
   };
 
@@ -98,8 +98,8 @@ export default function ClientsPage() {
     if (!firstName || !lastName || !email || !phoneNumber || !firestore) {
       toast({
         variant: 'destructive',
-        title: 'Missing Information',
-        description: 'Please fill out all required fields (First Name, Last Name, Email, Phone).',
+        title: 'Informations Manquantes',
+        description: 'Veuillez remplir tous les champs obligatoires (Prénom, Nom, Email, Téléphone).',
       });
       return;
     }
@@ -117,14 +117,14 @@ export default function ClientsPage() {
     if (dialogMode === 'add') {
       addDocumentNonBlocking(collection(firestore, 'clients'), clientData);
       toast({
-        title: 'Client Added',
-        description: `${firstName} ${lastName} has been added to the client list.`,
+        title: 'Client Ajouté',
+        description: `${firstName} ${lastName} a été ajouté à la liste des clients.`,
       });
     } else if (dialogMode === 'edit' && selectedClient) {
       updateDocumentNonBlocking(doc(firestore, 'clients', selectedClient.id), clientData);
       toast({
-        title: 'Client Updated',
-        description: `${firstName} ${lastName}'s information has been updated.`,
+        title: 'Client Mis à Jour',
+        description: `Les informations de ${firstName} ${lastName} ont été mises à jour.`,
       });
     }
 
@@ -142,19 +142,19 @@ export default function ClientsPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold font-headline tracking-tight">Client Management</h1>
-      <p className="text-muted-foreground">Maintain client profiles, history, and preferences.</p>
+      <h1 className="text-3xl font-bold font-headline tracking-tight">Gestion des Clients</h1>
+      <p className="text-muted-foreground">Maintenez les profils, l'historique et les préférences des clients.</p>
       <Card className="mt-6">
         <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle>All Clients</CardTitle>
-            <CardDescription>View and manage all hotel clients.</CardDescription>
+            <CardTitle>Tous les Clients</CardTitle>
+            <CardDescription>Voir et gérer tous les clients de l'hôtel.</CardDescription>
           </div>
           <div className="relative w-full max-w-sm">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search by name or email..."
+              placeholder="Rechercher par nom ou email..."
               className="w-full appearance-none bg-background pl-8 shadow-none"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -190,9 +190,9 @@ export default function ClientsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
+                  <TableHead>Nom</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>Phone Number</TableHead>
+                  <TableHead>Numéro de Téléphone</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -218,7 +218,7 @@ export default function ClientsPage() {
         </CardContent>
          <CardFooter className="border-t px-6 py-4">
           <Button onClick={handleOpenAddDialog}>
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Client
+            <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un Client
           </Button>
         </CardFooter>
       </Card>
@@ -226,18 +226,18 @@ export default function ClientsPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>{dialogMode === 'add' ? 'Add New Client' : 'Edit Client'}</DialogTitle>
+            <DialogTitle>{dialogMode === 'add' ? 'Ajouter un Nouveau Client' : 'Modifier le Client'}</DialogTitle>
             <DialogDescription>
-              {dialogMode === 'add' ? 'Fill in the details to add a new client.' : `Editing details for ${selectedClient?.firstName} ${selectedClient?.lastName}.`}
+              {dialogMode === 'add' ? "Remplissez les détails pour ajouter un nouveau client." : `Modification des détails pour ${selectedClient?.firstName} ${selectedClient?.lastName}.`}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="firstName">First Name</Label>
+              <Label htmlFor="firstName">Prénom</Label>
               <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="e.g. John" />
             </div>
              <div className="grid gap-2">
-              <Label htmlFor="lastName">Last Name</Label>
+              <Label htmlFor="lastName">Nom de famille</Label>
               <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="e.g. Doe" />
             </div>
             <div className="grid gap-2">
@@ -245,24 +245,24 @@ export default function ClientsPage() {
               <Input id="email" value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="e.g. john@example.com" />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="phoneNumber">Phone</Label>
+              <Label htmlFor="phoneNumber">Téléphone</Label>
               <Input id="phoneNumber" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="e.g. +1 234 567 890" />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="address">Address</Label>
-              <Textarea id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Client's full address" />
+              <Label htmlFor="address">Adresse</Label>
+              <Textarea id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Adresse complète du client" />
             </div>
              <div className="grid gap-2">
-              <Label htmlFor="preferences">Preferences</Label>
-              <Textarea id="preferences" value={preferences} onChange={(e) => setPreferences(e.target.value)} placeholder="e.g. High floor, non-smoking" />
+              <Label htmlFor="preferences">Préférences</Label>
+              <Textarea id="preferences" value={preferences} onChange={(e) => setPreferences(e.target.value)} placeholder="e.g. Étage élevé, non-fumeur" />
             </div>
              <div className="grid gap-2">
-              <Label htmlFor="notes">Notes</Label>
-              <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any other relevant notes" />
+              <Label htmlFor="notes">Remarques</Label>
+              <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Toutes autres remarques pertinentes" />
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={handleSave}>Save changes</Button>
+            <Button onClick={handleSave}>Sauvegarder les modifications</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

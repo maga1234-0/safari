@@ -44,9 +44,9 @@ import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, u
 import { collection, doc, query } from 'firebase/firestore';
 
 const roomStatusVariant: Record<RoomStatus, BadgeProps['variant']> = {
-  'Available': 'success',
-  'Occupied': 'warning',
-  'Maintenance': 'destructive',
+  'Disponible': 'success',
+  'Occupée': 'warning',
+  'En maintenance': 'destructive',
 };
 
 export default function RoomsPage() {
@@ -98,8 +98,8 @@ export default function RoomsPage() {
     if (!firestore) return;
     deleteDocumentNonBlocking(doc(firestore, 'rooms', roomId));
     toast({
-      title: 'Room Deleted',
-      description: 'The room has been removed.',
+      title: 'Chambre Supprimée',
+      description: 'La chambre a été supprimée.',
     });
   };
 
@@ -107,8 +107,8 @@ export default function RoomsPage() {
     if (!roomNumber || !type || !status || !price || !firestore) {
       toast({
         variant: 'destructive',
-        title: 'Missing Information',
-        description: 'Please fill out all fields.',
+        title: 'Informations Manquantes',
+        description: 'Veuillez remplir tous les champs.',
       });
       return;
     }
@@ -119,8 +119,8 @@ export default function RoomsPage() {
     if (isNaN(priceValue) || isNaN(roomNumberValue)) {
         toast({
             variant: 'destructive',
-            title: 'Invalid Input',
-            description: 'Room number and price must be valid numbers.',
+            title: 'Entrée Invalide',
+            description: 'Le numéro de chambre et le prix doivent être des nombres valides.',
         });
         return;
     }
@@ -135,14 +135,14 @@ export default function RoomsPage() {
     if (dialogMode === 'add') {
       addDocumentNonBlocking(collection(firestore, 'rooms'), roomData);
       toast({
-        title: 'Room Added',
-        description: `Room ${roomNumberValue} has been added.`,
+        title: 'Chambre Ajoutée',
+        description: `La chambre ${roomNumberValue} a été ajoutée.`,
       });
     } else if (dialogMode === 'edit' && selectedRoom) {
       updateDocumentNonBlocking(doc(firestore, 'rooms', selectedRoom.id), roomData);
       toast({
-        title: 'Room Updated',
-        description: `Room ${roomNumber}'s information has been updated.`,
+        title: 'Chambre Mise à Jour',
+        description: `Les informations de la chambre ${roomNumber} ont été mises à jour.`,
       });
     }
 
@@ -156,19 +156,19 @@ export default function RoomsPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold font-headline tracking-tight">Room Management</h1>
-      <p className="text-muted-foreground">Track room availability, status, and details.</p>
+      <h1 className="text-3xl font-bold font-headline tracking-tight">Gestion des Chambres</h1>
+      <p className="text-muted-foreground">Suivez la disponibilité, le statut et les détails des chambres.</p>
       <Card className="mt-6">
         <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle>All Rooms</CardTitle>
-            <CardDescription>View and manage all rooms in the hotel.</CardDescription>
+            <CardTitle>Toutes les Chambres</CardTitle>
+            <CardDescription>Voir et gérer toutes les chambres de l'hôtel.</CardDescription>
           </div>
           <div className="relative w-full max-w-sm">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search by room or type..."
+              placeholder="Rechercher par chambre ou type..."
               className="w-full appearance-none bg-background pl-8 shadow-none"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -182,7 +182,7 @@ export default function RoomsPage() {
               <Card key={room.id}>
                 <CardHeader className="flex flex-row items-center justify-between p-4">
                   <div>
-                    <CardTitle className="text-lg">Room {room.roomNumber}</CardTitle>
+                    <CardTitle className="text-lg">Chambre {room.roomNumber}</CardTitle>
                     <CardDescription>{room.type}</CardDescription>
                   </div>
                   <div className="text-lg font-bold">${room.price.toFixed(2)}</div>
@@ -199,8 +199,8 @@ export default function RoomsPage() {
                           <Trash className="h-4 w-4" />
                       </Button>
                     </div>
-                    {room.status === 'Available' && (
-                        <Button onClick={() => handleBookNow(room)} size="sm">Book Now</Button>
+                    {room.status === 'Disponible' && (
+                        <Button onClick={() => handleBookNow(room)} size="sm">Réserver maintenant</Button>
                     )}
                 </CardFooter>
               </Card>
@@ -212,10 +212,10 @@ export default function RoomsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Room No.</TableHead>
+                  <TableHead>N° Chambre</TableHead>
                   <TableHead>Type</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Price</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead>Prix</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -231,8 +231,8 @@ export default function RoomsPage() {
                     </TableCell>
                     <TableCell>${room.price.toFixed(2)}</TableCell>
                     <TableCell className="text-right">
-                      {room.status === 'Available' && (
-                          <Button onClick={() => handleBookNow(room)} size="sm" className="mr-2">Book Now</Button>
+                      {room.status === 'Disponible' && (
+                          <Button onClick={() => handleBookNow(room)} size="sm" className="mr-2">Réserver maintenant</Button>
                       )}
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(room)}>
                           <Edit className="h-4 w-4" />
@@ -249,7 +249,7 @@ export default function RoomsPage() {
         </CardContent>
          <CardFooter className="border-t px-6 py-4">
           <Button onClick={handleOpenAddDialog}>
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Room
+            <PlusCircle className="mr-2 h-4 w-4" /> Ajouter une Chambre
           </Button>
         </CardFooter>
       </Card>
@@ -257,15 +257,15 @@ export default function RoomsPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>{dialogMode === 'add' ? 'Add New Room' : 'Edit Room'}</DialogTitle>
+            <DialogTitle>{dialogMode === 'add' ? 'Ajouter une Nouvelle Chambre' : 'Modifier la Chambre'}</DialogTitle>
             <DialogDescription>
-              {dialogMode === 'add' ? 'Fill in the details to add a new room.' : `Editing details for room ${selectedRoom?.roomNumber}.`}
+              {dialogMode === 'add' ? "Remplissez les détails pour ajouter une nouvelle chambre." : `Modification des détails pour la chambre ${selectedRoom?.roomNumber}.`}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="roomNumber">
-                Room No.
+                N° Chambre
               </Label>
               <Input id="roomNumber" value={roomNumber} onChange={(e) => setRoomNumber(e.target.value)} type="number" placeholder="e.g. 101" />
             </div>
@@ -275,10 +275,10 @@ export default function RoomsPage() {
               </Label>
                <Select value={type} onValueChange={(value: Room['type']) => setType(value)}>
                   <SelectTrigger>
-                      <SelectValue placeholder="Select a type" />
+                      <SelectValue placeholder="Sélectionnez un type" />
                   </SelectTrigger>
                   <SelectContent>
-                      <SelectItem value="Single">Single</SelectItem>
+                      <SelectItem value="Simple">Simple</SelectItem>
                       <SelectItem value="Double">Double</SelectItem>
                       <SelectItem value="Suite">Suite</SelectItem>
                   </SelectContent>
@@ -286,28 +286,28 @@ export default function RoomsPage() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="status">
-                Status
+                Statut
               </Label>
                <Select value={status} onValueChange={(value: RoomStatus) => setStatus(value)}>
                   <SelectTrigger>
-                      <SelectValue placeholder="Select a status" />
+                      <SelectValue placeholder="Sélectionnez un statut" />
                   </SelectTrigger>
                   <SelectContent>
-                      <SelectItem value="Available">Available</SelectItem>
-                      <SelectItem value="Occupied">Occupied</SelectItem>
-                      <SelectItem value="Maintenance">Maintenance</SelectItem>
+                      <SelectItem value="Disponible">Disponible</SelectItem>
+                      <SelectItem value="Occupée">Occupée</SelectItem>
+                      <SelectItem value="En maintenance">En maintenance</SelectItem>
                   </SelectContent>
               </Select>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="price">
-                Price
+                Prix
               </Label>
               <Input id="price" value={price} onChange={(e) => setPrice(e.target.value)} type="number" placeholder="e.g. 150" />
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={handleSave}>Save changes</Button>
+            <Button onClick={handleSave}>Sauvegarder les modifications</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

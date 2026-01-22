@@ -43,17 +43,17 @@ export function SidebarNav() {
     {
       href: '/dashboard',
       icon: <LayoutDashboard />,
-      label: 'Dashboard',
+      label: 'Tableau de bord',
     },
     {
       href: '/rooms',
       icon: <BedDouble />,
-      label: 'Rooms',
+      label: 'Chambres',
     },
     {
       href: '/reservations',
       icon: <CalendarCheck2 />,
-      label: 'Reservations',
+      label: 'Réservations',
     },
     {
       href: '/clients',
@@ -63,12 +63,12 @@ export function SidebarNav() {
     {
       href: '/staff',
       icon: <UserCog />,
-      label: 'Staff',
+      label: 'Personnel',
     },
     {
       href: '/configuration',
       icon: <Building />,
-      label: 'Hotel Config',
+      label: 'Config Hôtel',
     },
   ];
 
@@ -110,9 +110,9 @@ export function SidebarNav() {
       <SidebarFooter className="mt-auto">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleLogout} tooltip="Logout">
+            <SidebarMenuButton onClick={handleLogout} tooltip="Déconnexion">
               <LogOut />
-              <span>Logout</span>
+              <span>Déconnexion</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

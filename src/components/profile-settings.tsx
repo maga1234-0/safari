@@ -32,16 +32,16 @@ export function ProfileSettings() {
       if (file.size > 2 * 1024 * 1024) { // 2MB limit
         toast({
           variant: 'destructive',
-          title: 'File too large',
-          description: 'Please select an image smaller than 2MB.',
+          title: 'Fichier trop volumineux',
+          description: 'Veuillez sélectionner une image de moins de 2 Mo.',
         });
         return;
       }
       if (!file.type.startsWith('image/')) {
         toast({
           variant: 'destructive',
-          title: 'Invalid file type',
-          description: 'Please select an image file (e.g., PNG, JPG).',
+          title: 'Type de fichier invalide',
+          description: 'Veuillez sélectionner un fichier image (par ex., PNG, JPG).',
         });
         return;
       }
@@ -50,8 +50,8 @@ export function ProfileSettings() {
       reader.onloadend = () => {
         setAvatar(reader.result as string);
         toast({
-          title: 'Profile picture updated',
-          description: 'Your new avatar is ready to be saved.',
+          title: 'Photo de profil mise à jour',
+          description: 'Votre nouvel avatar est prêt à être enregistré.',
         });
       };
       reader.readAsDataURL(file);
@@ -62,16 +62,16 @@ export function ProfileSettings() {
     // In a real app, this would persist to a database.
     // Here it's just confirming the context state is what we want.
     toast({
-      title: 'Profile Saved',
-      description: 'Your profile has been updated.',
+      title: 'Profil Enregistré',
+      description: 'Votre profil a été mis à jour.',
     });
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Profile</CardTitle>
-        <CardDescription>Manage your public profile and avatar.</CardDescription>
+        <CardTitle>Profil</CardTitle>
+        <CardDescription>Gérez votre profil public et votre avatar.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-6 pt-6">
         <div className="relative">
@@ -86,7 +86,7 @@ export function ProfileSettings() {
             onClick={handleAvatarClick}
           >
             <Edit className="h-4 w-4" />
-            <span className="sr-only">Change avatar</span>
+            <span className="sr-only">Changer d'avatar</span>
           </Button>
           <Input
             ref={fileInputRef}
@@ -97,13 +97,13 @@ export function ProfileSettings() {
           />
         </div>
         <div className="w-full space-y-2">
-            <Label htmlFor="displayName">Display Name</Label>
+            <Label htmlFor="displayName">Nom d'Affichage</Label>
             <Input id="displayName" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
       </CardContent>
        <CardFooter className="border-t px-6 py-4">
         <Button onClick={handleSave}>
-          <Save className="mr-2 h-4 w-4" /> Save Changes
+          <Save className="mr-2 h-4 w-4" /> Sauvegarder les Modifications
         </Button>
       </CardFooter>
     </Card>

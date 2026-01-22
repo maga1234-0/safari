@@ -41,18 +41,18 @@ import { useNotifications } from '@/context/notification-context';
 
 const chartConfig = {
   revenue: {
-    label: 'Revenue',
+    label: 'Revenu',
     color: 'hsl(var(--chart-1))',
   },
 } satisfies ChartConfig;
 
 const bookingStatusVariant: Record<BookingStatus, BadgeProps['variant']> = {
-  'Confirmed': 'success',
-  'Pending': 'warning',
-  'Cancelled': 'destructive',
-  'CheckedIn': 'default',
-  'CheckedOut': 'secondary',
-  'Reserved': 'default',
+  'Confirmée': 'success',
+  'En attente': 'warning',
+  'Annulée': 'destructive',
+  'Enregistré': 'default',
+  'Parti': 'secondary',
+  'Réservée': 'default',
 };
 
 function toDateSafe(date: any): Date {
@@ -86,16 +86,16 @@ export default function Dashboard() {
     bookings.forEach(booking => {
       const checkOutDate = startOfDay(toDateSafe(booking.checkOut));
       // Only act on bookings that are 'CheckedIn' or 'Confirmed' and due for checkout
-      if ((booking.status === 'CheckedIn' || booking.status === 'Confirmed') && today >= checkOutDate) {
+      if ((booking.status === 'Enregistré' || booking.status === 'Confirmée') && today >= checkOutDate) {
         
         const bookingRef = doc(firestore, 'reservations', booking.id);
-        updateDocumentNonBlocking(bookingRef, { status: 'CheckedOut', paymentStatus: 'Paid' });
+        updateDocumentNonBlocking(bookingRef, { status: 'Parti', paymentStatus: 'Payé' });
 
         const roomRef = doc(firestore, 'rooms', booking.roomId);
-        updateDocumentNonBlocking(roomRef, { status: 'Available' });
+        updateDocumentNonBlocking(roomRef, { status: 'Disponible' });
 
         addNotification(
-          `Room ${booking.roomNumber} auto-checkout complete.`,
+          `Chambre ${booking.roomNumber} check-out automatique terminé.`,
           `/rooms`
         );
       }
@@ -108,7 +108,7 @@ export default function Dashboard() {
     }
 
     const revenueBookings = bookings.filter(b => 
-        ['Confirmed', 'CheckedIn', 'CheckedOut'].includes(b.status)
+        ['Confirmée', 'Enregistré', 'Parti'].includes(b.status)
     );
 
     const totalRevenue = revenueBookings.reduce((acc, booking) => {
@@ -125,9 +125,9 @@ export default function Dashboard() {
     
     const newBookings = bookings.filter(b => isToday(toDateSafe(b.createdAt))).length;
 
-    const availableRooms = rooms.filter(r => r.status === 'Available').length;
-    const occupiedRooms = rooms.filter(r => r.status === 'Occupied').length;
-    const maintenanceRooms = rooms.filter(r => r.status === 'Maintenance').length;
+    const availableRooms = rooms.filter(r => r.status === 'Disponible').length;
+    const occupiedRooms = rooms.filter(r => r.status === 'Occupée').length;
+    const maintenanceRooms = rooms.filter(r => r.status === 'En maintenance').length;
     const totalRooms = rooms.length;
 
     return {
@@ -156,8 +156,8 @@ export default function Dashboard() {
     const yearEnd = endOfYear(new Date());
 
     const monthLabels = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 
+      'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'
     ];
     
     const monthlyTotals = monthLabels.reduce((acc, month) => {
@@ -168,7 +168,7 @@ export default function Dashboard() {
     const revenueBookings = bookings.filter(b => {
         const checkInDate = toDateSafe(b.checkIn);
         const isCurrentYear = checkInDate >= yearStart && checkInDate <= yearEnd;
-        const isRevenueStatus = ['Confirmed', 'CheckedIn', 'CheckedOut'].includes(b.status);
+        const isRevenueStatus = ['Confirmée', 'Enregistré', 'Parti'].includes(b.status);
         return isCurrentYear && isRevenueStatus;
     });
 
@@ -182,8 +182,9 @@ export default function Dashboard() {
       const price = booking.pricePerNight ?? rooms.find(r => r.id === booking.roomId)?.price ?? 0;
       const bookingRevenue = price * nightsCount;
       
-      if (monthlyTotals.hasOwnProperty(month)) {
-        monthlyTotals[month] += bookingRevenue;
+      const monthLabel = monthLabels[checkInDate.getMonth()];
+      if (monthlyTotals.hasOwnProperty(monthLabel)) {
+        monthlyTotals[monthLabel] += bookingRevenue;
       }
     });
 
@@ -203,58 +204,58 @@ export default function Dashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Total Revenue
+              Revenu Total
             </CardTitle>
             <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-headline">
-              ${metrics.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ${metrics.totalRevenue.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
             <p className="text-xs text-muted-foreground">
-              From confirmed, checked-in, and checked-out bookings
+              Des réservations confirmées, enregistrées et parties
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Available Rooms</CardTitle>
+            <CardTitle className="text-sm font-medium">Chambres Disponibles</CardTitle>
             <Bed className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-headline">{metrics.availableRooms}</div>
             <p className="text-xs text-muted-foreground">
-              {metrics.totalRooms > 0 ? `${((metrics.availableRooms / metrics.totalRooms) * 100).toFixed(0)}% of total rooms` : 'No rooms available'}
+              {metrics.totalRooms > 0 ? `${((metrics.availableRooms / metrics.totalRooms) * 100).toFixed(0)}% du total des chambres` : 'Pas de chambres disponibles'}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Occupied Rooms</CardTitle>
+            <CardTitle className="text-sm font-medium">Chambres Occupées</CardTitle>
             <BedDouble className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-headline">{metrics.occupiedRooms}</div>
             <p className="text-xs text-muted-foreground">
-               {metrics.totalRooms > 0 ? `${((metrics.occupiedRooms / metrics.totalRooms) * 100).toFixed(0)}% of total rooms` : 'No rooms available'}
+               {metrics.totalRooms > 0 ? `${((metrics.occupiedRooms / metrics.totalRooms) * 100).toFixed(0)}% du total des chambres` : 'Pas de chambres disponibles'}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Under Maintenance</CardTitle>
+            <CardTitle className="text-sm font-medium">En Maintenance</CardTitle>
             <Wrench className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-headline">{metrics.maintenanceRooms}</div>
             <p className="text-xs text-muted-foreground">
-              Rooms currently unavailable
+              Chambres actuellement indisponibles
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">New Bookings Today</CardTitle>
+            <CardTitle className="text-sm font-medium">Nouvelles Réservations Aujourd'hui</CardTitle>
             <CalendarPlus className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -262,27 +263,27 @@ export default function Dashboard() {
               +{metrics.newBookings}
             </div>
             <p className="text-xs text-muted-foreground">
-              Based on creation date
+              Basé sur la date de création
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Rooms</CardTitle>
+            <CardTitle className="text-sm font-medium">Total des Chambres</CardTitle>
             <Building className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-headline">{metrics.totalRooms}</div>
-            <p className="text-xs text-muted-foreground">Total hotel capacity</p>
+            <p className="text-xs text-muted-foreground">Capacité totale de l'hôtel</p>
           </CardContent>
         </Card>
       </div>
       <div className="grid gap-4 md:gap-6 md:grid-cols-2">
         <Card className="lg:col-span-1">
           <CardHeader>
-            <CardTitle className="font-headline">Revenue Overview</CardTitle>
+            <CardTitle className="font-headline">Aperçu des Revenus</CardTitle>
             <CardDescription>
-              Revenue performance for the current year.
+              Performance des revenus pour l'année en cours.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -310,9 +311,9 @@ export default function Dashboard() {
         </Card>
         <Card className="lg:col-span-1">
           <CardHeader>
-            <CardTitle className="font-headline">Recent Bookings</CardTitle>
+            <CardTitle className="font-headline">Réservations Récentes</CardTitle>
             <CardDescription>
-              A live-updating list of recent bookings.
+              Une liste des réservations récentes mise à jour en direct.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -320,9 +321,9 @@ export default function Dashboard() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Client</TableHead>
-                  <TableHead>Room</TableHead>
+                  <TableHead>Chambre</TableHead>
                   <TableHead>Dates</TableHead>
-                  <TableHead className="text-right">Status</TableHead>
+                  <TableHead className="text-right">Statut</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -333,8 +334,8 @@ export default function Dashboard() {
                     </TableCell>
                     <TableCell>{booking.roomNumber}</TableCell>
                     <TableCell>
-                      {format(toDateSafe(booking.checkIn), 'MM/dd/yyyy')} -{' '}
-                      {format(toDateSafe(booking.checkOut), 'MM/dd/yyyy')}
+                      {format(toDateSafe(booking.checkIn), 'dd/MM/yyyy')} -{' '}
+                      {format(toDateSafe(booking.checkOut), 'dd/MM/yyyy')}
                     </TableCell>
                     <TableCell className="text-right">
                        <Badge variant={bookingStatusVariant[booking.status]}>

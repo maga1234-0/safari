@@ -45,8 +45,8 @@ import { FirebaseError } from 'firebase/app';
 
 const roleVariant: Record<StaffRole, BadgeProps['variant']> = {
   'Admin': 'destructive',
-  'Reception': 'default',
-  'Housekeeping': 'secondary',
+  'Réception': 'default',
+  'Entretien ménager': 'secondary',
 };
 
 export default function StaffPage() {
@@ -94,8 +94,8 @@ export default function StaffPage() {
     if (!firestore) return;
     deleteDocumentNonBlocking(doc(firestore, 'staff', staffId));
     toast({
-      title: 'Staff Member Deleted',
-      description: 'The staff member has been removed.',
+      title: 'Membre du Personnel Supprimé',
+      description: 'Le membre du personnel a été supprimé.',
     });
   };
 
@@ -103,8 +103,8 @@ export default function StaffPage() {
     if (!name || !email || !role || !firestore || !auth) {
       toast({
         variant: 'destructive',
-        title: 'Missing Information',
-        description: 'Please fill out all fields.',
+        title: 'Informations Manquantes',
+        description: 'Veuillez remplir tous les champs.',
       });
       return;
     }
@@ -117,8 +117,8 @@ export default function StaffPage() {
           if (!password) {
             toast({
               variant: 'destructive',
-              title: 'Password Required',
-              description: 'Please assign a password for the new admin.',
+              title: 'Mot de Passe Requis',
+              description: 'Veuillez attribuer un mot de passe pour le nouvel administrateur.',
             });
             return;
           }
@@ -130,26 +130,26 @@ export default function StaffPage() {
         addDocumentNonBlocking(collection(firestore, 'staff'), staffData);
 
         toast({
-          title: 'Staff Member Added',
+          title: 'Membre du Personnel Ajouté',
           description: role === 'Admin' 
-            ? `${name} can now log in with their email and the assigned password.`
-            : `${name} has been added to the staff list.`,
+            ? `${name} peut maintenant se connecter avec son email et le mot de passe attribué.`
+            : `${name} a été ajouté à la liste du personnel.`,
         });
 
       } catch (error) {
         if (error instanceof FirebaseError) {
           toast({
             variant: 'destructive',
-            title: 'Error Creating Staff',
+            title: 'Erreur lors de la Création du Personnel',
             description: error.code === 'auth/email-already-in-use' 
-              ? 'An account with this email already exists.' 
+              ? 'Un compte avec cet email existe déjà.' 
               : error.message,
           });
         } else {
            toast({
             variant: 'destructive',
-            title: 'An Unknown Error Occurred',
-            description: 'Could not create the staff member.',
+            title: 'Une Erreur Inconnue est Survenue',
+            description: 'Impossible de créer le membre du personnel.',
           });
         }
         return; // Prevent dialog from closing on error
@@ -157,8 +157,8 @@ export default function StaffPage() {
     } else if (dialogMode === 'edit' && selectedStaff) {
       updateDocumentNonBlocking(doc(firestore, 'staff', selectedStaff.id), staffData);
       toast({
-        title: 'Staff Member Updated',
-        description: `${name}'s information has been updated.`,
+        title: 'Membre du Personnel Mis à Jour',
+        description: `Les informations de ${name} ont été mises à jour.`,
       });
     }
 
@@ -175,19 +175,19 @@ export default function StaffPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold font-headline tracking-tight">Staff Management</h1>
-      <p className="text-muted-foreground">Manage staff roles and permissions.</p>
+      <h1 className="text-3xl font-bold font-headline tracking-tight">Gestion du Personnel</h1>
+      <p className="text-muted-foreground">Gérer les rôles et les autorisations du personnel.</p>
       <Card className="mt-6">
         <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle>All Staff Members</CardTitle>
-            <CardDescription>View and manage all staff accounts.</CardDescription>
+            <CardTitle>Tous les Membres du Personnel</CardTitle>
+            <CardDescription>Voir et gérer tous les comptes du personnel.</CardDescription>
           </div>
            <div className="relative w-full max-w-sm">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search by name or email..."
+              placeholder="Rechercher par nom ou email..."
               className="w-full appearance-none bg-background pl-8 shadow-none"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -225,9 +225,9 @@ export default function StaffPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
+                  <TableHead>Nom</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
+                  <TableHead>Rôle</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -255,22 +255,22 @@ export default function StaffPage() {
         </CardContent>
         <CardFooter className="border-t px-6 py-4">
           <Button onClick={handleOpenAddDialog}>
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Staff
+            <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un Membre
           </Button>
         </CardFooter>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>{dialogMode === 'add' ? 'Add New Staff Member' : 'Edit Staff Member'}</DialogTitle>
+              <DialogTitle>{dialogMode === 'add' ? 'Ajouter un Nouveau Membre du Personnel' : 'Modifier le Membre du Personnel'}</DialogTitle>
               <DialogDescription>
-                {dialogMode === 'add' ? 'Fill in the details to add a new staff member.' : `Editing information for ${selectedStaff?.name}.`}
+                {dialogMode === 'add' ? "Remplissez les détails pour ajouter un nouveau membre du personnel." : `Modification des informations pour ${selectedStaff?.name}.`}
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
                 <Label htmlFor="name">
-                  Name
+                  Nom
                 </Label>
                 <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. John Doe" />
               </div>
@@ -282,30 +282,30 @@ export default function StaffPage() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="role">
-                  Role
+                  Rôle
                 </Label>
                  <Select value={role} onValueChange={(value: StaffRole) => setRole(value)}>
                     <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
+                        <SelectValue placeholder="Sélectionnez un rôle" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="Admin">Admin</SelectItem>
-                        <SelectItem value="Reception">Reception</SelectItem>
-                        <SelectItem value="Housekeeping">Housekeeping</SelectItem>
+                        <SelectItem value="Réception">Réception</SelectItem>
+                        <SelectItem value="Entretien ménager">Entretien ménager</SelectItem>
                     </SelectContent>
                 </Select>
               </div>
               {dialogMode === 'add' && role === 'Admin' && (
                 <div className="grid gap-2">
                   <Label htmlFor="password">
-                    Password
+                    Mot de passe
                   </Label>
-                  <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Assign a password" />
+                  <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Attribuer un mot de passe" />
                 </div>
               )}
             </div>
             <DialogFooter>
-              <Button onClick={handleSave}>Save changes</Button>
+              <Button onClick={handleSave}>Sauvegarder les modifications</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

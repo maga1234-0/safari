@@ -1,7 +1,7 @@
 import type { Timestamp } from 'firebase/firestore';
 
-export type BookingStatus = 'Confirmed' | 'Pending' | 'Cancelled' | 'CheckedIn' | 'CheckedOut' | 'Reserved';
-export type PaymentStatus = 'Pending' | 'Paid' | 'Refunded';
+export type BookingStatus = 'Confirmée' | 'En attente' | 'Annulée' | 'Enregistré' | 'Parti' | 'Réservée';
+export type PaymentStatus = 'En attente' | 'Payé' | 'Remboursé';
 
 export type Booking = {
   id: string;
@@ -23,17 +23,17 @@ export type Revenue = {
   revenue: number;
 };
 
-export type RoomStatus = 'Available' | 'Occupied' | 'Maintenance';
+export type RoomStatus = 'Disponible' | 'Occupée' | 'En maintenance';
 
 export type Room = {
   id: string;
   roomNumber: number;
-  type: 'Single' | 'Double' | 'Suite';
+  type: 'Simple' | 'Double' | 'Suite';
   status: RoomStatus;
   price: number;
 };
 
-export type StaffRole = 'Admin' | 'Reception' | 'Housekeeping';
+export type StaffRole = 'Admin' | 'Réception' | 'Entretien ménager';
 
 export type StaffMember = {
   id: string;

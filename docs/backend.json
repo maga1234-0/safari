@@ -14,7 +14,7 @@
           "type": "string",
           "description": "Type of room.",
           "enum": [
-            "Single",
+            "Simple",
             "Double",
             "Suite"
           ]
@@ -23,9 +23,9 @@
           "type": "string",
           "description": "Current status of the room.",
           "enum": [
-            "Available",
-            "Occupied",
-            "Maintenance"
+            "Disponible",
+            "Occupée",
+            "En maintenance"
           ]
         },
         "price": {
@@ -85,21 +85,21 @@
           "type": "string",
           "description": "The status of the reservation.",
           "enum": [
-            "Reserved",
-            "CheckedIn",
-            "CheckedOut",
-            "Cancelled",
-            "Confirmed",
-            "Pending"
+            "Réservée",
+            "Enregistré",
+            "Parti",
+            "Annulée",
+            "Confirmée",
+            "En attente"
           ]
         },
         "paymentStatus": {
           "type": "string",
           "description": "The payment status of the reservation.",
           "enum": [
-            "Pending",
-            "Paid",
-            "Refunded"
+            "En attente",
+            "Payé",
+            "Remboursé"
           ]
         },
         "totalAmount": {
@@ -181,8 +181,8 @@
           "description": "Role of the staff member.",
           "enum": [
             "Admin",
-            "Reception",
-            "Housekeeping"
+            "Réception",
+            "Entretien ménager"
           ]
         }
       },

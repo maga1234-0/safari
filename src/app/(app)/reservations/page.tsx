@@ -45,12 +45,12 @@ import { useCollection, useFirestore, useUser, useMemoFirebase, addDocumentNonBl
 import { collection, doc, query, serverTimestamp } from 'firebase/firestore';
 
 const bookingStatusVariant: Record<BookingStatus, BadgeProps['variant']> = {
-  'Confirmed': 'success',
-  'Pending': 'warning',
-  'Cancelled': 'destructive',
-  'CheckedIn': 'default',
-  'CheckedOut': 'secondary',
-  'Reserved': 'default',
+  'Confirmée': 'success',
+  'En attente': 'warning',
+  'Annulée': 'destructive',
+  'Enregistré': 'default',
+  'Parti': 'secondary',
+  'Réservée': 'default',
 };
 
 function toDateSafe(date: any): Date {
@@ -102,7 +102,7 @@ export default function ReservationsPage() {
         setRoomId(roomIdFromQuery);
         setCheckIn(undefined);
         setCheckOut(undefined);
-        setStatus('Pending');
+        setStatus('En attente');
         setDialogOpen(true);
         setPrefilled(true);
       }
@@ -112,7 +112,7 @@ export default function ReservationsPage() {
   const availableRoomsForBooking = useMemo(() => {
     if (!rooms) return [];
     return rooms.filter(room => {
-      if (room.status === 'Available') {
+      if (room.status === 'Disponible') {
         return true;
       }
       if (dialogMode === 'edit' && selectedBooking && room.id === selectedBooking.roomId) {
@@ -148,8 +148,8 @@ export default function ReservationsPage() {
     if (!clientName || !roomId || !checkIn || !checkOut || !status || !user || !firestore) {
       toast({
         variant: 'destructive',
-        title: 'Missing Information',
-        description: 'Please fill out all fields.',
+        title: 'Informations Manquantes',
+        description: 'Veuillez remplir tous les champs.',
       });
       return;
     }
@@ -158,19 +158,19 @@ export default function ReservationsPage() {
     if (!selectedRoom) {
         toast({
             variant: 'destructive',
-            title: 'Invalid Room',
-            description: 'The selected room does not exist.',
+            title: 'Chambre Invalide',
+            description: "La chambre sélectionnée n'existe pas.",
         });
         return;
     }
 
     const roomRef = doc(firestore, 'rooms', roomId);
-    const newRoomStatus = status === 'Cancelled' || status === 'CheckedOut' ? 'Available' : 'Occupied';
+    const newRoomStatus = status === 'Annulée' || status === 'Parti' ? 'Disponible' : 'Occupée';
 
     const nights = differenceInDays(checkOut, checkIn);
     const nightsCount = nights > 0 ? nights : 1;
 
-    const statusesThatImplyPaid: BookingStatus[] = ['Confirmed', 'CheckedIn', 'CheckedOut'];
+    const statusesThatImplyPaid: BookingStatus[] = ['Confirmée', 'Enregistré', 'Parti'];
 
     if (dialogMode === 'add') {
       const totalAmount = selectedRoom.price * nightsCount;
@@ -184,19 +184,19 @@ export default function ReservationsPage() {
         status: status as BookingStatus,
         createdAt: serverTimestamp(),
         pricePerNight: selectedRoom.price,
-        paymentStatus: statusesThatImplyPaid.includes(status as BookingStatus) ? 'Paid' : 'Pending',
+        paymentStatus: statusesThatImplyPaid.includes(status as BookingStatus) ? 'Payé' : 'En attente',
         totalAmount,
       };
       addDocumentNonBlocking(collection(firestore, 'reservations'), newBooking);
       updateDocumentNonBlocking(roomRef, { status: newRoomStatus });
       toast({
-        title: 'Reservation Added',
-        description: `Booking for ${clientName} has been created.`,
+        title: 'Réservation Ajoutée',
+        description: `La réservation pour ${clientName} a été créée.`,
       });
     } else if (dialogMode === 'edit' && selectedBooking) {
       if (selectedBooking.roomId !== roomId) {
         const oldRoomRef = doc(firestore, 'rooms', selectedBooking.roomId);
-        updateDocumentNonBlocking(oldRoomRef, { status: 'Available' });
+        updateDocumentNonBlocking(oldRoomRef, { status: 'Disponible' });
       }
       
       const pricePerNight = selectedBooking.roomId !== roomId 
@@ -205,17 +205,17 @@ export default function ReservationsPage() {
 
       const totalAmount = pricePerNight * nightsCount;
 
-      let newPaymentStatus: PaymentStatus = selectedBooking.paymentStatus || 'Pending';
+      let newPaymentStatus: PaymentStatus = selectedBooking.paymentStatus || 'En attente';
       if (statusesThatImplyPaid.includes(status as BookingStatus)) {
-        newPaymentStatus = 'Paid';
-      } else if (status === 'Cancelled') {
-        if (selectedBooking.paymentStatus === 'Paid') {
-            newPaymentStatus = 'Refunded';
+        newPaymentStatus = 'Payé';
+      } else if (status === 'Annulée') {
+        if (selectedBooking.paymentStatus === 'Payé') {
+            newPaymentStatus = 'Remboursé';
         } else {
-            newPaymentStatus = 'Pending';
+            newPaymentStatus = 'En attente';
         }
       } else {
-        newPaymentStatus = 'Pending';
+        newPaymentStatus = 'En attente';
       }
 
       const updatedBooking = { 
@@ -233,8 +233,8 @@ export default function ReservationsPage() {
       updateDocumentNonBlocking(doc(firestore, 'reservations', selectedBooking.id), updatedBooking);
       updateDocumentNonBlocking(roomRef, { status: newRoomStatus });
       toast({
-        title: 'Reservation Updated',
-        description: `Booking for ${clientName} has been updated.`,
+        title: 'Réservation Mise à Jour',
+        description: `La réservation pour ${clientName} a été mise à jour.`,
       });
     }
 
@@ -245,10 +245,10 @@ export default function ReservationsPage() {
     if (!firestore) return;
     deleteDocumentNonBlocking(doc(firestore, 'reservations', booking.id));
     const roomRef = doc(firestore, 'rooms', booking.roomId);
-    updateDocumentNonBlocking(roomRef, { status: 'Available' });
+    updateDocumentNonBlocking(roomRef, { status: 'Disponible' });
     toast({
-      title: 'Reservation Deleted',
-      description: 'The booking has been removed.',
+      title: 'Réservation Supprimée',
+      description: 'La réservation a été supprimée.',
     });
   };
 
@@ -276,19 +276,19 @@ export default function ReservationsPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold font-headline tracking-tight">Reservation Management</h1>
-      <p className="text-muted-foreground">Create, modify, and cancel reservations.</p>
+      <h1 className="text-3xl font-bold font-headline tracking-tight">Gestion des Réservations</h1>
+      <p className="text-muted-foreground">Créez, modifiez et annulez des réservations.</p>
       <Card className="mt-6">
         <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle>All Reservations</CardTitle>
-            <CardDescription>View and manage all guest reservations.</CardDescription>
+            <CardTitle>Toutes les réservations</CardTitle>
+            <CardDescription>Voir et gérer toutes les réservations des clients.</CardDescription>
           </div>
           <div className="relative w-full max-w-sm">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search by client name..."
+              placeholder="Rechercher par nom de client..."
               className="w-full appearance-none bg-background pl-8 shadow-none"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -304,7 +304,7 @@ export default function ReservationsPage() {
                     <div className="flex justify-between items-start">
                         <div>
                             <CardTitle className="text-lg">{booking.clientName}</CardTitle>
-                            <CardDescription>Room {booking.roomNumber}</CardDescription>
+                            <CardDescription>Chambre {booking.roomNumber}</CardDescription>
                         </div>
                         <Badge variant={bookingStatusVariant[booking.status]}>
                             {booking.status}
@@ -313,12 +313,12 @@ export default function ReservationsPage() {
                 </CardHeader>
                 <CardContent className="p-4 pt-0 space-y-2">
                     <div className="text-sm text-muted-foreground">
-                        <span className="font-medium text-foreground">Check-in: </span>
-                        {format(toDateSafe(booking.checkIn), 'EEE, MMM d, yyyy')}
+                        <span className="font-medium text-foreground">Arrivée: </span>
+                        {format(toDateSafe(booking.checkIn), 'EEE, d MMM, yyyy')}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                        <span className="font-medium text-foreground">Check-out: </span>
-                        {format(toDateSafe(booking.checkOut), 'EEE, MMM d, yyyy')}
+                        <span className="font-medium text-foreground">Départ: </span>
+                        {format(toDateSafe(booking.checkOut), 'EEE, d MMM, yyyy')}
                     </div>
                     <div className="text-lg font-bold text-right">
                         ${calculateTotal(booking).toFixed(2)}
@@ -342,10 +342,10 @@ export default function ReservationsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Client</TableHead>
-                  <TableHead>Room No.</TableHead>
-                  <TableHead>Check-in</TableHead>
-                  <TableHead>Check-out</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>N° Chambre</TableHead>
+                  <TableHead>Arrivée</TableHead>
+                  <TableHead>Départ</TableHead>
+                  <TableHead>Statut</TableHead>
                   <TableHead>Total</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -355,8 +355,8 @@ export default function ReservationsPage() {
                   <TableRow key={booking.id}>
                     <TableCell className="font-medium">{booking.clientName}</TableCell>
                     <TableCell>{booking.roomNumber}</TableCell>
-                    <TableCell>{format(toDateSafe(booking.checkIn), 'MM/dd/yyyy')}</TableCell>
-                    <TableCell>{format(toDateSafe(booking.checkOut), 'MM/dd/yyyy')}</TableCell>
+                    <TableCell>{format(toDateSafe(booking.checkIn), 'dd/MM/yyyy')}</TableCell>
+                    <TableCell>{format(toDateSafe(booking.checkOut), 'dd/MM/yyyy')}</TableCell>
                     <TableCell>
                       <Badge variant={bookingStatusVariant[booking.status]}>
                         {booking.status}
@@ -379,7 +379,7 @@ export default function ReservationsPage() {
         </CardContent>
         <CardFooter className="border-t px-6 py-4">
           <Button onClick={handleOpenAddDialog}>
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Reservation
+            <PlusCircle className="mr-2 h-4 w-4" /> Ajouter une réservation
           </Button>
         </CardFooter>
       </Card>
@@ -387,30 +387,30 @@ export default function ReservationsPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>{dialogMode === 'add' ? 'Add New Reservation' : 'Edit Reservation'}</DialogTitle>
+            <DialogTitle>{dialogMode === 'add' ? 'Ajouter une Nouvelle Réservation' : 'Modifier la Réservation'}</DialogTitle>
             <DialogDescription>
-              {dialogMode === 'add' ? 'Fill in the details to add a new reservation.' : `Editing reservation for ${selectedBooking?.clientName}.`}
+              {dialogMode === 'add' ? "Remplissez les détails pour ajouter une nouvelle réservation." : `Modification de la réservation pour ${selectedBooking?.clientName}.`}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="clientName">
-                Client Name
+                Nom du Client
               </Label>
               <Input id="clientName" value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="e.g. John Doe" />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="roomNumber">
-                Room
+                Chambre
               </Label>
               <Select value={roomId} onValueChange={setRoomId}>
                   <SelectTrigger>
-                      <SelectValue placeholder="Select a room" />
+                      <SelectValue placeholder="Sélectionnez une chambre" />
                   </SelectTrigger>
                   <SelectContent>
                       {availableRoomsForBooking?.map(room => (
                         <SelectItem key={room.id} value={room.id}>
-                          Room {room.roomNumber} ({room.type})
+                          Chambre {room.roomNumber} ({room.type})
                         </SelectItem>
                       ))}
                   </SelectContent>
@@ -419,7 +419,7 @@ export default function ReservationsPage() {
 
             <div className="grid gap-2">
               <Label htmlFor="checkIn">
-                Check-in
+                Arrivée
               </Label>
               <Input
                 id="checkIn"
@@ -431,7 +431,7 @@ export default function ReservationsPage() {
             
             <div className="grid gap-2">
               <Label htmlFor="checkOut">
-                Check-out
+                Départ
               </Label>
               <Input
                 id="checkOut"
@@ -443,26 +443,26 @@ export default function ReservationsPage() {
 
             <div className="grid gap-2">
               <Label htmlFor="status">
-                Status
+                Statut
               </Label>
                <Select value={status} onValueChange={(value: BookingStatus) => setStatus(value)}>
                   <SelectTrigger>
-                      <SelectValue placeholder="Select a status" />
+                      <SelectValue placeholder="Sélectionnez un statut" />
                   </SelectTrigger>
                   <SelectContent>
-                      <SelectItem value="Pending">Pending</SelectItem>
-                      <SelectItem value="Reserved">Reserved</SelectItem>
-                      <SelectItem value="Confirmed">Confirmed</SelectItem>
-                      <SelectItem value="CheckedIn">Checked-In</SelectItem>
-                      <SelectItem value="CheckedOut">Checked-Out</SelectItem>
-                      <SelectItem value="Cancelled">Cancelled</SelectItem>
+                      <SelectItem value="En attente">En attente</SelectItem>
+                      <SelectItem value="Réservée">Réservée</SelectItem>
+                      <SelectItem value="Confirmée">Confirmée</SelectItem>
+                      <SelectItem value="Enregistré">Enregistré</SelectItem>
+                      <SelectItem value="Parti">Parti</SelectItem>
+                      <SelectItem value="Annulée">Annulée</SelectItem>
                   </SelectContent>
               </Select>
             </div>
 
           </div>
           <DialogFooter>
-            <Button onClick={handleSave}>Save changes</Button>
+            <Button onClick={handleSave}>Sauvegarder les modifications</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

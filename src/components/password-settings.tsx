@@ -36,8 +36,8 @@ export function PasswordSettings() {
     if (!currentPassword || !newPassword || !confirmPassword) {
       toast({
         variant: 'destructive',
-        title: 'Missing fields',
-        description: 'Please fill in all password fields.',
+        title: 'Champs manquants',
+        description: 'Veuillez remplir tous les champs de mot de passe.',
       });
       return;
     }
@@ -45,8 +45,8 @@ export function PasswordSettings() {
     if (newPassword !== confirmPassword) {
       toast({
         variant: 'destructive',
-        title: 'Passwords do not match',
-        description: 'Your new password and confirmation do not match.',
+        title: 'Les mots de passe ne correspondent pas',
+        description: 'Votre nouveau mot de passe et sa confirmation ne correspondent pas.',
       });
       return;
     }
@@ -54,8 +54,8 @@ export function PasswordSettings() {
     if (!user || !user.email) {
       toast({
         variant: 'destructive',
-        title: 'Error',
-        description: 'Could not find user information.',
+        title: 'Erreur',
+        description: "Impossible de trouver les informations de l'utilisateur.",
       });
       return;
     }
@@ -68,22 +68,22 @@ export function PasswordSettings() {
       await updatePassword(user, newPassword);
 
       toast({
-        title: 'Password updated',
-        description: 'Your login credentials have been successfully changed.',
+        title: 'Mot de passe mis à jour',
+        description: 'Vos identifiants de connexion ont été modifiés avec succès.',
       });
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (error) {
-      let description = 'An unknown error occurred.';
+      let description = 'Une erreur inconnue est survenue.';
       if (error instanceof FirebaseError) {
           description = error.code === 'auth/wrong-password' 
-              ? 'The current password you entered is incorrect.' 
-              : 'An error occurred. Please try again.';
+              ? 'Le mot de passe actuel que vous avez entré est incorrect.' 
+              : 'Une erreur est survenue. Veuillez réessayer.';
       }
       toast({
         variant: 'destructive',
-        title: 'Password change failed',
+        title: 'La modification du mot de passe a échoué',
         description: description,
       });
     } finally {
@@ -94,12 +94,12 @@ export function PasswordSettings() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Login Credentials</CardTitle>
-        <CardDescription>Change your account password.</CardDescription>
+        <CardTitle>Identifiants de Connexion</CardTitle>
+        <CardDescription>Changez le mot de passe de votre compte.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="currentPassword">Current Password</Label>
+          <Label htmlFor="currentPassword">Mot de Passe Actuel</Label>
           <div className="relative">
             <Input 
               id="currentPassword" 
@@ -127,7 +127,7 @@ export function PasswordSettings() {
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="newPassword">New Password</Label>
+          <Label htmlFor="newPassword">Nouveau Mot de Passe</Label>
            <div className="relative">
             <Input 
               id="newPassword" 
@@ -155,7 +155,7 @@ export function PasswordSettings() {
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Confirm New Password</Label>
+          <Label htmlFor="confirmPassword">Confirmez le Nouveau Mot de Passe</Label>
           <div className="relative">
             <Input 
               id="confirmPassword" 
@@ -190,7 +190,7 @@ export function PasswordSettings() {
           ) : (
             <Save className="mr-2 h-4 w-4" />
           )}
-          {isLoading ? 'Saving...' : 'Save Password'}
+          {isLoading ? 'Enregistrement...' : 'Enregistrer le Mot de Passe'}
         </Button>
       </CardFooter>
     </Card>
