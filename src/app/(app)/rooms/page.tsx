@@ -178,8 +178,12 @@ export default function RoomsPage() {
         <CardContent>
           {/* Mobile View */}
           <div className="grid gap-4 md:hidden">
-            {filteredRooms?.map((room) => (
-              <Card key={room.id}>
+            {filteredRooms?.map((room, index) => (
+              <Card
+                key={room.id}
+                className="animate-slide-in-from-bottom transition-shadow duration-300 hover:shadow-md"
+                style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
+              >
                 <CardHeader className="flex flex-row items-center justify-between p-4">
                   <div>
                     <CardTitle className="text-lg">Chambre {room.roomNumber}</CardTitle>

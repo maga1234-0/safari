@@ -298,8 +298,12 @@ export default function ReservationsPage() {
         <CardContent>
           {/* Mobile view */}
           <div className="grid gap-4 md:hidden">
-            {filteredBookings?.map((booking) => (
-            <Card key={booking.id}>
+            {filteredBookings?.map((booking, index) => (
+            <Card
+              key={booking.id}
+              className="animate-slide-in-from-bottom transition-shadow duration-300 hover:shadow-md"
+              style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
+            >
                 <CardHeader className="p-4">
                     <div className="flex justify-between items-start">
                         <div>

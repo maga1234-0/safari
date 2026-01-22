@@ -164,8 +164,12 @@ export default function ClientsPage() {
         <CardContent>
           {/* Mobile view */}
           <div className="grid gap-4 md:hidden">
-            {filteredClients?.map((client) => (
-              <Card key={client.id}>
+            {filteredClients?.map((client, index) => (
+              <Card
+                key={client.id}
+                className="animate-slide-in-from-bottom transition-shadow duration-300 hover:shadow-md"
+                style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
+              >
                 <CardHeader className="p-4">
                   <CardTitle className="text-lg">{`${client.firstName} ${client.lastName}`}</CardTitle>
                   <CardDescription>{client.email}</CardDescription>

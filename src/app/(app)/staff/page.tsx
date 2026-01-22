@@ -197,8 +197,12 @@ export default function StaffPage() {
         <CardContent>
           {/* Mobile View */}
           <div className="grid gap-4 md:hidden">
-            {filteredStaff?.map((staffMember) => (
-              <Card key={staffMember.id}>
+            {filteredStaff?.map((staffMember, index) => (
+              <Card
+                key={staffMember.id}
+                className="animate-slide-in-from-bottom transition-shadow duration-300 hover:shadow-md"
+                style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
+              >
                 <CardHeader className="p-4">
                     <div className="flex justify-between items-start">
                       <div>

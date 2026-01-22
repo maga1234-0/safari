@@ -201,7 +201,7 @@ export default function Dashboard() {
   return (
     <div className="grid flex-1 items-start gap-4 sm:gap-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card>
+        <Card className="animate-slide-in-from-top transition-transform duration-300 hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Revenu Total
@@ -217,7 +217,7 @@ export default function Dashboard() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="animate-slide-in-from-top transition-transform duration-300 hover:-translate-y-1" style={{ animationDelay: '100ms', animationFillMode: 'backwards' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Chambres Disponibles</CardTitle>
             <Bed className="h-4 w-4 text-muted-foreground" />
@@ -229,7 +229,7 @@ export default function Dashboard() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="animate-slide-in-from-top transition-transform duration-300 hover:-translate-y-1" style={{ animationDelay: '200ms', animationFillMode: 'backwards' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Chambres Occupées</CardTitle>
             <BedDouble className="h-4 w-4 text-muted-foreground" />
@@ -241,7 +241,7 @@ export default function Dashboard() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="animate-slide-in-from-top transition-transform duration-300 hover:-translate-y-1" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">En Maintenance</CardTitle>
             <Wrench className="h-4 w-4 text-muted-foreground" />
@@ -253,7 +253,7 @@ export default function Dashboard() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="animate-slide-in-from-top transition-transform duration-300 hover:-translate-y-1" style={{ animationDelay: '400ms', animationFillMode: 'backwards' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Nouvelles Réservations Aujourd'hui</CardTitle>
             <CalendarPlus className="h-4 w-4 text-muted-foreground" />
@@ -267,7 +267,7 @@ export default function Dashboard() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="animate-slide-in-from-top transition-transform duration-300 hover:-translate-y-1" style={{ animationDelay: '500ms', animationFillMode: 'backwards' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total des Chambres</CardTitle>
             <Building className="h-4 w-4 text-muted-foreground" />
@@ -279,7 +279,7 @@ export default function Dashboard() {
         </Card>
       </div>
       <div className="grid gap-4 md:gap-6 md:grid-cols-2">
-        <Card className="lg:col-span-1">
+        <Card className="lg:col-span-1 animate-slide-in-from-bottom transition-shadow duration-300 hover:shadow-lg" style={{ animationDelay: '600ms', animationFillMode: 'backwards' }}>
           <CardHeader>
             <CardTitle className="font-headline">Aperçu des Revenus</CardTitle>
             <CardDescription>
@@ -309,7 +309,7 @@ export default function Dashboard() {
             </ChartContainer>
           </CardContent>
         </Card>
-        <Card className="lg:col-span-1">
+        <Card className="lg:col-span-1 animate-slide-in-from-bottom transition-shadow duration-300 hover:shadow-lg" style={{ animationDelay: '700ms', animationFillMode: 'backwards' }}>
           <CardHeader>
             <CardTitle className="font-headline">Réservations Récentes</CardTitle>
             <CardDescription>
