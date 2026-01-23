@@ -7,13 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Home, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useAuth, useUser, initiateEmailSignIn } from "@/firebase";
+import { useAuth, useUser, initiateEmailSignIn, useFirestore, initiateEmailSignUp, addDocumentNonBlocking } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { FirebaseError } from "firebase/app";
+import { collection } from "firebase/firestore";
 
 export default function LoginPage() {
   const router = useRouter();
   const auth = useAuth();
+  const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
 
@@ -35,12 +37,39 @@ export default function LoginPage() {
       // On success, onAuthStateChanged will trigger the redirect.
     } catch (error) {
       let description = "Une erreur inconnue est survenue. Veuillez réessayer.";
-      if (error instanceof FirebaseError) {
+      
+      if (error instanceof FirebaseError && error.code === 'auth/invalid-credential' && email.toLowerCase() === 'safari@gmail.com') {
+        // This block attempts to create the main admin user if login fails, assuming it might not exist.
+        try {
+            const userCredential = await initiateEmailSignUp(auth, email, password);
+            if (userCredential.user && firestore) {
+                const staffData = { name: 'Main Admin', email: email.toLowerCase(), role: 'Admin' };
+                addDocumentNonBlocking(collection(firestore, 'staff'), staffData);
+                toast({
+                    title: 'Compte Admin Créé',
+                    description: "Le compte administrateur principal a été créé et vous êtes maintenant connecté.",
+                });
+            }
+            // On successful creation, the onAuthStateChanged listener will handle the redirect.
+            return; 
+        } catch (signupError) {
+            if (signupError instanceof FirebaseError) {
+                // If signup fails because the email is in use, it means the password was simply incorrect.
+                description = signupError.code === 'auth/email-already-in-use'
+                    ? 'Email ou mot de passe invalide. Veuillez réessayer.'
+                    : signupError.message;
+            } else {
+                description = 'Erreur lors de la tentative de création du compte admin. Veuillez réessayer.';
+            }
+        }
+      } else if (error instanceof FirebaseError) {
+        // Handle other Firebase errors
         description =
           error.code === 'auth/invalid-credential'
             ? 'Email ou mot de passe invalide. Veuillez réessayer.'
             : error.message;
       }
+      
       toast({
         variant: 'destructive',
         title: 'Échec de la Connexion',
