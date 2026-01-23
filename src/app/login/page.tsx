@@ -7,10 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Home, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useAuth, useUser, initiateEmailSignIn, useFirestore, initiateEmailSignUp, addDocumentNonBlocking } from "@/firebase";
+import { useAuth, useUser, initiateEmailSignIn, useFirestore, initiateEmailSignUp } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { FirebaseError } from "firebase/app";
-import { collection } from "firebase/firestore";
+import { collection, addDoc } from "firebase/firestore";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -44,7 +44,8 @@ export default function LoginPage() {
             const userCredential = await initiateEmailSignUp(auth, email, password);
             if (userCredential.user && firestore) {
                 const staffData = { name: 'Main Admin', email: email.toLowerCase(), role: 'Admin' };
-                addDocumentNonBlocking(collection(firestore, 'staff'), staffData);
+                // Use a blocking write to ensure the staff document exists before proceeding
+                await addDoc(collection(firestore, 'staff'), staffData);
                 toast({
                     title: 'Compte Admin Créé',
                     description: "Le compte administrateur principal a été créé et vous êtes maintenant connecté.",
