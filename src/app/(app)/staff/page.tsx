@@ -172,6 +172,14 @@ export default function StaffPage() {
         return;
       }
     } else if (dialogMode === 'edit' && selectedStaff) {
+      if (password) {
+        toast({
+            variant: 'destructive',
+            title: 'Modification du Mot de Passe Non Prise en Charge',
+            description: "Pour des raisons de sécurité, la modification directe du mot de passe n'est pas possible. Veuillez supprimer et recréer l'administrateur avec un nouveau mot de passe.",
+        });
+        return;
+      }
       updateDocumentNonBlocking(doc(firestore, 'staff', selectedStaff.id), staffData);
       toast({
         title: 'Membre du Personnel Mis à Jour',
@@ -316,12 +324,18 @@ export default function StaffPage() {
                     </SelectContent>
                 </Select>
               </div>
-              {dialogMode === 'add' && role === 'Admin' && (
+              {role === 'Admin' && (
                 <div className="grid gap-2">
                   <Label htmlFor="password">
                     Mot de passe
                   </Label>
-                  <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Attribuer un mot de passe" />
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)} 
+                    placeholder={dialogMode === 'add' ? 'Attribuer un mot de passe' : 'Laisser vide pour ne pas changer'}
+                  />
                 </div>
               )}
             </div>
