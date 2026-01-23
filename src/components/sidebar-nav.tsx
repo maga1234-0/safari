@@ -7,6 +7,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
+  SidebarMenuSkeleton,
 } from '@/components/ui/sidebar';
 import {
   LayoutDashboard,
@@ -22,7 +23,6 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/firebase';
 import { useUser as useAppUser } from '@/context/user-context';
-import { useMemo } from 'react';
 
 export function SidebarNav() {
   const pathname = usePathname();
@@ -72,20 +72,6 @@ export function SidebarNav() {
     },
   ];
 
-  const visibleMenuItems = useMemo(() => {
-    if (isRoleLoading) {
-      return [];
-    }
-
-    // Any user with a valid role can see the menu.
-    // A future improvement could be to filter items based on the specific role.
-    if (role) {
-      return menuItems;
-    }
-
-    return [];
-  }, [role, isRoleLoading]);
-
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -97,16 +83,26 @@ export function SidebarNav() {
         </div>
       </SidebarHeader>
       <SidebarMenu>
-        {visibleMenuItems.map((item) => (
-          <SidebarMenuItem key={item.href}>
-            <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={item.label}>
-              <Link href={item.href}>
-                {item.icon}
-                <span>{item.label}</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        ))}
+        {isRoleLoading ? (
+          <>
+            {Array.from({ length: menuItems.length }).map((_, index) => (
+              <SidebarMenuItem key={index}>
+                <SidebarMenuSkeleton showIcon />
+              </SidebarMenuItem>
+            ))}
+          </>
+        ) : role ? (
+          menuItems.map((item) => (
+            <SidebarMenuItem key={item.href}>
+              <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={item.label}>
+                <Link href={item.href}>
+                  {item.icon}
+                  <span>{item.label}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))
+        ) : null}
       </SidebarMenu>
       <SidebarFooter className="mt-auto">
         <SidebarMenu>
