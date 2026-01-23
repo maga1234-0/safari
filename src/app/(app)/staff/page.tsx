@@ -39,9 +39,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking, useAuth, initiateEmailSignUp } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, doc, query } from 'firebase/firestore';
-import { FirebaseError } from 'firebase/app';
+import { FirebaseError, initializeApp, deleteApp } from 'firebase/app';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { firebaseConfig } from '@/firebase/config';
 
 const roleVariant: Record<StaffRole, BadgeProps['variant']> = {
   'Admin': 'destructive',
@@ -52,7 +54,6 @@ const roleVariant: Record<StaffRole, BadgeProps['variant']> = {
 export default function StaffPage() {
   const { toast } = useToast();
   const firestore = useFirestore();
-  const auth = useAuth();
 
   const staffQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -99,8 +100,20 @@ export default function StaffPage() {
     });
   };
 
+  const createAuthUserWithoutSigningOut = async (email: string, password: string) => {
+    const tempAppName = `temp-signup-${Date.now()}`;
+    const tempApp = initializeApp(firebaseConfig, tempAppName);
+    const tempAuth = getAuth(tempApp);
+
+    try {
+      await createUserWithEmailAndPassword(tempAuth, email, password);
+    } finally {
+      await deleteApp(tempApp);
+    }
+  };
+
   const handleSave = async () => {
-    if (!name || !email || !role || !firestore || !auth) {
+    if (!name || !email || !role || !firestore) {
       toast({
         variant: 'destructive',
         title: 'Informations Manquantes',
@@ -122,11 +135,9 @@ export default function StaffPage() {
             });
             return;
           }
-          // Create the Firebase Auth user with the assigned password.
-          await initiateEmailSignUp(auth, email, password);
+          await createAuthUserWithoutSigningOut(email, password);
         }
         
-        // Add the staff member's details to the 'staff' collection in Firestore.
         addDocumentNonBlocking(collection(firestore, 'staff'), staffData);
 
         toast({
@@ -137,22 +148,28 @@ export default function StaffPage() {
         });
 
       } catch (error) {
+        let description = 'Impossible de créer le membre du personnel.';
         if (error instanceof FirebaseError) {
-          toast({
-            variant: 'destructive',
-            title: 'Erreur lors de la Création du Personnel',
-            description: error.code === 'auth/email-already-in-use' 
-              ? 'Un compte avec cet email existe déjà.' 
-              : error.message,
-          });
-        } else {
-           toast({
-            variant: 'destructive',
-            title: 'Une Erreur Inconnue est Survenue',
-            description: 'Impossible de créer le membre du personnel.',
-          });
+          switch (error.code) {
+            case 'auth/email-already-in-use':
+              description = 'Un compte avec cet email existe déjà.';
+              break;
+            case 'auth/invalid-email':
+              description = "L'adresse email n'est pas valide.";
+              break;
+            case 'auth/weak-password':
+              description = 'Le mot de passe doit contenir au moins 6 caractères.';
+              break;
+            default:
+              description = `Une erreur est survenue: ${error.message}`;
+          }
         }
-        return; // Prevent dialog from closing on error
+        toast({
+          variant: 'destructive',
+          title: 'Erreur lors de la Création du Personnel',
+          description: description,
+        });
+        return;
       }
     } else if (dialogMode === 'edit' && selectedStaff) {
       updateDocumentNonBlocking(doc(firestore, 'staff', selectedStaff.id), staffData);
