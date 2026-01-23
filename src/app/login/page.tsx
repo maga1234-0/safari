@@ -14,6 +14,23 @@ import { getAuth, createUserWithEmailAndPassword, type UserCredential } from 'fi
 import { collection, addDoc } from 'firebase/firestore';
 import { firebaseConfig } from '@/firebase/config';
 
+// This helper function creates a user in a temporary, separate Firebase app instance.
+// This is the key to creating a new user account without automatically signing in
+// as that new user, which would disrupt the current session.
+const createAuthUserWithoutSigningOut = async (email: string, password: string): Promise<UserCredential> => {
+  const tempAppName = `temp-signup-${Date.now()}`;
+  const tempApp = initializeApp(firebaseConfig, tempAppName);
+  const tempAuth = getAuth(tempApp);
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
+    return userCredential;
+  } finally {
+    // Clean up the temporary app instance to prevent memory leaks.
+    await deleteApp(tempApp);
+  }
+};
+
 export default function LoginPage() {
   const router = useRouter();
   const auth = useAuth();
@@ -31,23 +48,6 @@ export default function LoginPage() {
       router.push('/dashboard');
     }
   }, [user, isUserLoading, router]);
-
-  // This helper function creates a user in a temporary, separate Firebase app instance.
-  // This is the key to creating a new user account without automatically signing in
-  // as that new user, which would disrupt the current session.
-  const createAuthUserWithoutSigningOut = async (email: string, password: string): Promise<UserCredential> => {
-    const tempAppName = `temp-signup-${Date.now()}`;
-    const tempApp = initializeApp(firebaseConfig, tempAppName);
-    const tempAuth = getAuth(tempApp);
-
-    try {
-      const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
-      return userCredential;
-    } finally {
-      // Clean up the temporary app instance to prevent memory leaks.
-      await deleteApp(tempApp);
-    }
-  };
 
   const handleLogin = async () => {
     setIsLoggingIn(true);

@@ -51,6 +51,19 @@ const roleVariant: Record<StaffRole, BadgeProps['variant']> = {
   'Entretien ménager': 'secondary',
 };
 
+const createAuthUserWithoutSigningOut = async (email: string, password: string): Promise<UserCredential> => {
+  const tempAppName = `temp-signup-${Date.now()}`;
+  const tempApp = initializeApp(firebaseConfig, tempAppName);
+  const tempAuth = getAuth(tempApp);
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
+    return userCredential;
+  } finally {
+    await deleteApp(tempApp);
+  }
+};
+
 export default function StaffPage() {
   const { toast } = useToast();
   const firestore = useFirestore();
@@ -98,19 +111,6 @@ export default function StaffPage() {
       title: 'Membre du Personnel Supprimé',
       description: 'Le membre du personnel a été supprimé.',
     });
-  };
-
-  const createAuthUserWithoutSigningOut = async (email: string, password: string): Promise<UserCredential> => {
-    const tempAppName = `temp-signup-${Date.now()}`;
-    const tempApp = initializeApp(firebaseConfig, tempAppName);
-    const tempAuth = getAuth(tempApp);
-
-    try {
-      const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
-      return userCredential;
-    } finally {
-      await deleteApp(tempApp);
-    }
   };
 
   const handleSave = async () => {
