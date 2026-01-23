@@ -77,12 +77,13 @@ export function SidebarNav() {
       return [];
     }
 
+    // Only Admins can access the dashboard, so they see all menu items.
     if (role === 'Admin') {
-      const adminPages = ['/dashboard', '/rooms', '/reservations', '/clients'];
-      return menuItems.filter(item => adminPages.includes(item.href));
+      return menuItems;
     }
 
-    return menuItems;
+    // Other roles are not permitted to log in, so they see no items.
+    return [];
   }, [role, isRoleLoading]);
 
   return (
