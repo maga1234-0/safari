@@ -73,10 +73,10 @@ export default function StaffPage() {
   const handleOpenAddDialog = () => {
     setDialogMode('add');
     setSelectedStaff(null);
-    setName('');
-    setEmail('');
-    setRole('');
-    setPassword('');
+    setName('Main Admin');
+    setEmail('safari@gmail.com');
+    setRole('Admin');
+    setPassword('safari@#');
     setDialogOpen(true);
   };
 
