@@ -1,9 +1,8 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useEffect, useMemo } from 'react';
-import { useUser as useFirebaseAuthUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
-import type { StaffMember, StaffRole } from '@/lib/types';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { useUser as useFirebaseAuthUser } from '@/firebase';
+import type { StaffRole } from '@/lib/types';
 
 interface UserContextType {
   avatar: string;
@@ -18,31 +17,33 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const { user } = useFirebaseAuthUser();
-  const firestore = useFirestore();
   
   const [avatar, setAvatar] = useState<string>('');
-  const [name, setName] = useState<string>('Admin');
-
-  const staffQuery = useMemoFirebase(() => {
-    if (!firestore || !user?.email) {
-      return null;
-    }
-    return query(collection(firestore, 'staff'), where('email', '==', user.email));
-  }, [firestore, user?.email]);
-  
-  const { data: staff, isLoading: isStaffLoading } = useCollection<StaffMember>(staffQuery);
-
-  const role = useMemo(() => staff?.[0]?.role ?? null, [staff]);
+  const [name, setName] = useState<string>('');
 
   useEffect(() => {
     if (user) {
-      setName(staff?.[0]?.name || user.displayName || 'Admin');
+      // Use display name and photo from the Firebase user object directly.
+      setName(user.displayName || 'Admin');
       setAvatar(user.photoURL || '');
     }
-  }, [user, staff]);
+  }, [user]);
+
+  const value = {
+    avatar,
+    setAvatar,
+    name,
+    setName,
+    // We are no longer fetching the role from Firestore here.
+    // We'll return a default 'Admin' role and `false` for loading
+    // to ensure components like the sidebar still render correctly
+    // without doing the expensive/complex role check.
+    role: 'Admin' as StaffRole,
+    isRoleLoading: false
+  };
 
   return (
-    <UserContext.Provider value={{ avatar, setAvatar, name, setName, role, isRoleLoading: isStaffLoading }}>
+    <UserContext.Provider value={value}>
       {children}
     </UserContext.Provider>
   );

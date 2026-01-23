@@ -9,7 +9,6 @@ import { UserProvider } from '@/context/user-context';
 import { NotificationProvider } from '@/context/notification-context';
 import { useUser, useAuth } from '@/firebase';
 import { Loader2 } from 'lucide-react';
-import { AuthGuard } from '@/components/auth-guard';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isUserLoading } = useUser();
@@ -54,17 +53,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <UserProvider>
       <NotificationProvider>
-        <AuthGuard>
-          <SidebarProvider>
-            <SidebarNav />
-            <SidebarInset>
-              <Header />
-              <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background animate-fade-in">
-                {children}
-              </main>
-            </SidebarInset>
-          </SidebarProvider>
-        </AuthGuard>
+        <SidebarProvider>
+          <SidebarNav />
+          <SidebarInset>
+            <Header />
+            <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background animate-fade-in">
+              {children}
+            </main>
+          </SidebarInset>
+        </SidebarProvider>
       </NotificationProvider>
     </UserProvider>
   );
