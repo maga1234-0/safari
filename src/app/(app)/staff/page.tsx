@@ -42,7 +42,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, doc, query } from 'firebase/firestore';
 import { FirebaseError, initializeApp, deleteApp } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, type UserCredential } from 'firebase/auth';
 import { firebaseConfig } from '@/firebase/config';
 
 const roleVariant: Record<StaffRole, BadgeProps['variant']> = {
@@ -100,13 +100,14 @@ export default function StaffPage() {
     });
   };
 
-  const createAuthUserWithoutSigningOut = async (email: string, password: string) => {
+  const createAuthUserWithoutSigningOut = async (email: string, password: string): Promise<UserCredential> => {
     const tempAppName = `temp-signup-${Date.now()}`;
     const tempApp = initializeApp(firebaseConfig, tempAppName);
     const tempAuth = getAuth(tempApp);
 
     try {
-      await createUserWithEmailAndPassword(tempAuth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
+      return userCredential;
     } finally {
       await deleteApp(tempApp);
     }
@@ -122,7 +123,7 @@ export default function StaffPage() {
       return;
     }
     
-    const staffData = { name, email, role: role as StaffRole };
+    const staffData: Partial<StaffMember> = { name, email, role: role as StaffRole };
 
     if (dialogMode === 'add') {
       try {
@@ -135,7 +136,8 @@ export default function StaffPage() {
             });
             return;
           }
-          await createAuthUserWithoutSigningOut(email, password);
+          const userCredential = await createAuthUserWithoutSigningOut(email, password);
+          staffData.uid = userCredential.user.uid;
         }
         
         addDocumentNonBlocking(collection(firestore, 'staff'), staffData);
@@ -172,19 +174,60 @@ export default function StaffPage() {
         return;
       }
     } else if (dialogMode === 'edit' && selectedStaff) {
-      if (password) {
-        toast({
+      const isBecomingAdmin = role === 'Admin' && selectedStaff.role !== 'Admin';
+      
+      try {
+          if (isBecomingAdmin) {
+            if (!password) {
+              toast({
+                variant: 'destructive',
+                title: 'Mot de Passe Requis',
+                description: 'Veuillez attribuer un mot de passe pour promouvoir ce membre du personnel en administrateur.',
+              });
+              return;
+            }
+            const userCredential = await createAuthUserWithoutSigningOut(email, password);
+            staffData.uid = userCredential.user.uid;
+          } else if (role === 'Admin' && password) {
+             toast({
+                variant: 'destructive',
+                title: 'Modification du Mot de Passe Non Prise en Charge',
+                description: "Pour des raisons de sécurité, la modification directe du mot de passe n'est pas possible. Veuillez supprimer et recréer l'administrateur avec un nouveau mot de passe.",
+            });
+            return;
+          } else if (role === 'Admin' && !isBecomingAdmin) {
+            staffData.uid = selectedStaff.uid;
+          }
+
+          updateDocumentNonBlocking(doc(firestore, 'staff', selectedStaff.id), staffData);
+          toast({
+            title: 'Membre du Personnel Mis à Jour',
+            description: `Les informations de ${name} ont été mises à jour.`,
+          });
+      } catch(error) {
+          let description = 'Impossible de mettre à jour le membre du personnel.';
+          if (error instanceof FirebaseError) {
+            switch (error.code) {
+              case 'auth/email-already-in-use':
+                description = 'Un compte avec cet email existe déjà.';
+                break;
+              case 'auth/invalid-email':
+                description = "L'adresse email n'est pas valide.";
+                break;
+              case 'auth/weak-password':
+                description = 'Le mot de passe doit contenir au moins 6 caractères.';
+                break;
+              default:
+                description = `Une erreur est survenue: ${error.message}`;
+            }
+          }
+          toast({
             variant: 'destructive',
-            title: 'Modification du Mot de Passe Non Prise en Charge',
-            description: "Pour des raisons de sécurité, la modification directe du mot de passe n'est pas possible. Veuillez supprimer et recréer l'administrateur avec un nouveau mot de passe.",
-        });
-        return;
+            title: 'Erreur lors de la Mise à Jour du Personnel',
+            description: description,
+          });
+          return;
       }
-      updateDocumentNonBlocking(doc(firestore, 'staff', selectedStaff.id), staffData);
-      toast({
-        title: 'Membre du Personnel Mis à Jour',
-        description: `Les informations de ${name} ont été mises à jour.`,
-      });
     }
 
     setDialogOpen(false);
@@ -334,7 +377,7 @@ export default function StaffPage() {
                     type="password" 
                     value={password} 
                     onChange={(e) => setPassword(e.target.value)} 
-                    placeholder={dialogMode === 'add' ? 'Attribuer un mot de passe' : 'Laisser vide pour ne pas changer'}
+                    placeholder={dialogMode === 'add' || (dialogMode === 'edit' && selectedStaff?.role !== 'Admin') ? 'Attribuer un mot de passe' : 'Laisser vide pour ne pas changer'}
                   />
                 </div>
               )}

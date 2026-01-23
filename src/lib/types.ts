@@ -37,6 +37,7 @@ export type StaffRole = 'Admin' | 'Réception' | 'Entretien ménager';
 
 export type StaffMember = {
   id: string;
+  uid?: string;
   name: string;
   email: string;
   role: StaffRole;

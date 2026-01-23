@@ -204,6 +204,10 @@
             "Réception",
             "Entretien ménager"
           ]
+        },
+        "uid": {
+          "type": "string",
+          "description": "The Firebase Authentication user ID, if applicable."
         }
       },
       "required": [

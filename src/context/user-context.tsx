@@ -1,8 +1,9 @@
 'use client';
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { useUser as useFirebaseAuthUser } from '@/firebase';
-import type { StaffRole } from '@/lib/types';
+import { useUser as useFirebaseAuthUser, useFirestore } from '@/firebase';
+import type { StaffMember, StaffRole } from '@/lib/types';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
 interface UserContextType {
   avatar: string;
@@ -16,30 +17,65 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const { user } = useFirebaseAuthUser();
+  const { user, isUserLoading: isAuthLoading } = useFirebaseAuthUser();
+  const firestore = useFirestore();
   
   const [avatar, setAvatar] = useState<string>('');
   const [name, setName] = useState<string>('');
+  const [role, setRole] = useState<StaffRole | null>(null);
+  const [isRoleLoading, setIsRoleLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
-      // Use display name and photo from the Firebase user object directly.
-      setName(user.displayName || 'Admin');
+      setName(user.displayName || '');
       setAvatar(user.photoURL || '');
+    } else {
+      setName('');
+      setAvatar('');
+      setRole(null);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (isAuthLoading) {
+      return;
+    }
+    
+    if (!user || !firestore) {
+      setRole(null);
+      setIsRoleLoading(false);
+      return;
+    }
+    
+    setIsRoleLoading(true);
+
+    const staffQuery = query(collection(firestore, 'staff'), where('uid', '==', user.uid));
+    
+    const unsubscribe = onSnapshot(staffQuery, (snapshot) => {
+      if (!snapshot.empty) {
+        const staffData = snapshot.docs[0].data() as StaffMember;
+        setRole(staffData.role);
+        setName(staffData.name); // Also update name from Firestore record
+      } else {
+        setRole(null);
+      }
+      setIsRoleLoading(false);
+    }, (error) => {
+      console.error("Error fetching user role: ", error);
+      setRole(null);
+      setIsRoleLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [user, firestore, isAuthLoading]);
 
   const value = {
     avatar,
     setAvatar,
     name,
     setName,
-    // We are no longer fetching the role from Firestore here.
-    // We'll return a default 'Admin' role and `false` for loading
-    // to ensure components like the sidebar still render correctly
-    // without doing the expensive/complex role check.
-    role: 'Admin' as StaffRole,
-    isRoleLoading: false
+    role,
+    isRoleLoading: isAuthLoading || isRoleLoading
   };
 
   return (
