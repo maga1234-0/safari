@@ -118,7 +118,7 @@ export default function StaffPage() {
       toast({
         variant: 'destructive',
         title: 'Informations Manquantes',
-        description: 'Veuillez remplir tous les champs.',
+        description: 'Veuillez remplir les champs Nom, Email et Rôle.',
       });
       return;
     }
@@ -126,27 +126,23 @@ export default function StaffPage() {
     const staffData: Partial<StaffMember> = { name, email, role: role as StaffRole };
 
     if (dialogMode === 'add') {
+      if (!password) {
+        toast({
+          variant: 'destructive',
+          title: 'Mot de Passe Requis',
+          description: 'Veuillez attribuer un mot de passe pour le nouveau membre du personnel.',
+        });
+        return;
+      }
       try {
-        if (role === 'Admin') {
-          if (!password) {
-            toast({
-              variant: 'destructive',
-              title: 'Mot de Passe Requis',
-              description: 'Veuillez attribuer un mot de passe pour le nouvel administrateur.',
-            });
-            return;
-          }
-          const userCredential = await createAuthUserWithoutSigningOut(email, password);
-          staffData.uid = userCredential.user.uid;
-        }
+        const userCredential = await createAuthUserWithoutSigningOut(email, password);
+        staffData.uid = userCredential.user.uid;
         
         addDocumentNonBlocking(collection(firestore, 'staff'), staffData);
 
         toast({
           title: 'Membre du Personnel Ajouté',
-          description: role === 'Admin' 
-            ? `${name} peut maintenant se connecter avec son email et le mot de passe attribué.`
-            : `${name} a été ajouté à la liste du personnel.`,
+          description: `${name} peut maintenant se connecter avec son email et le mot de passe attribué.`,
         });
 
       } catch (error) {
@@ -174,28 +170,24 @@ export default function StaffPage() {
         return;
       }
     } else if (dialogMode === 'edit' && selectedStaff) {
-      const isBecomingAdmin = role === 'Admin' && selectedStaff.role !== 'Admin';
-      
       try {
-          if (isBecomingAdmin) {
-            if (!password) {
-              toast({
-                variant: 'destructive',
-                title: 'Mot de Passe Requis',
-                description: 'Veuillez attribuer un mot de passe pour promouvoir ce membre du personnel en administrateur.',
-              });
-              return;
-            }
-            const userCredential = await createAuthUserWithoutSigningOut(email, password);
-            staffData.uid = userCredential.user.uid;
-          } else if (role === 'Admin' && password) {
+          if (selectedStaff.uid && password) {
              toast({
                 variant: 'destructive',
                 title: 'Modification du Mot de Passe Non Prise en Charge',
-                description: "Pour des raisons de sécurité, la modification directe du mot de passe n'est pas possible. Veuillez supprimer et recréer l'administrateur avec un nouveau mot de passe.",
+                description: "Pour des raisons de sécurité, la modification directe du mot de passe n'est pas possible. Le membre du personnel doit changer son propre mot de passe via la page des paramètres.",
             });
             return;
-          } else if (role === 'Admin' && !isBecomingAdmin) {
+          }
+
+          if (!selectedStaff.uid && password) {
+             const userCredential = await createAuthUserWithoutSigningOut(email, password);
+             staffData.uid = userCredential.user.uid;
+             toast({
+              title: 'Identifiants Créés',
+              description: `Le membre du personnel ${name} peut maintenant se connecter.`,
+            });
+          } else {
             staffData.uid = selectedStaff.uid;
           }
 
@@ -367,20 +359,18 @@ export default function StaffPage() {
                     </SelectContent>
                 </Select>
               </div>
-              {role === 'Admin' && (
-                <div className="grid gap-2">
-                  <Label htmlFor="password">
-                    Mot de passe
-                  </Label>
-                  <Input 
-                    id="password" 
-                    type="password" 
-                    value={password} 
-                    onChange={(e) => setPassword(e.target.value)} 
-                    placeholder={dialogMode === 'add' || (dialogMode === 'edit' && selectedStaff?.role !== 'Admin') ? 'Attribuer un mot de passe' : 'Laisser vide pour ne pas changer'}
-                  />
-                </div>
-              )}
+              <div className="grid gap-2">
+                <Label htmlFor="password">
+                  Mot de passe
+                </Label>
+                <Input 
+                  id="password" 
+                  type="password" 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  placeholder={dialogMode === 'add' ? 'Attribuer un mot de passe (requis)' : 'Laisser vide pour ne pas changer'}
+                />
+              </div>
             </div>
             <DialogFooter>
               <Button onClick={handleSave}>Sauvegarder les modifications</Button>
