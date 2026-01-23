@@ -10,8 +10,8 @@ import { useRouter } from "next/navigation";
 import { useAuth, useUser, initiateEmailSignIn, useFirestore } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { FirebaseError } from "firebase/app";
-import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { collection, addDoc } from 'firebase/firestore';
+import { getAuth, createUserWithEmailAndPassword, type UserCredential } from 'firebase/auth';
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, deleteApp } from 'firebase/app';
 
@@ -32,14 +32,15 @@ export default function LoginPage() {
       router.push('/dashboard');
     }
   }, [user, isUserLoading, router]);
-
-  const createAuthUserWithoutSigningOut = async (email: string, password: string) => {
+  
+  const createAuthUserWithoutSigningOut = async (email: string, password: string): Promise<UserCredential> => {
     const tempAppName = `temp-signup-${Date.now()}`;
     const tempApp = initializeApp(firebaseConfig, tempAppName);
     const tempAuth = getAuth(tempApp);
 
     try {
-      await createUserWithEmailAndPassword(tempAuth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
+      return userCredential;
     } finally {
       await deleteApp(tempApp);
     }
@@ -50,35 +51,35 @@ export default function LoginPage() {
     try {
       await initiateEmailSignIn(auth, email, password);
     } catch (error) {
-       if (
+      if (
         error instanceof FirebaseError &&
         error.code === 'auth/invalid-credential' &&
         email === 'safari@gmail.com'
       ) {
+        // This can mean either "user not found" or "wrong password".
+        // We'll try to create the user to resolve this.
         try {
-          await createAuthUserWithoutSigningOut(email, password);
-
+          const userCredential = await createAuthUserWithoutSigningOut(email, password);
+          // If creation succeeds, the user did not exist.
+          // Now, create the corresponding staff document with the correct UID.
           if (firestore) {
-            const staffRef = collection(firestore, 'staff');
-            const q = query(staffRef, where('email', '==', email));
-            const querySnapshot = await getDocs(q);
-
-            if (querySnapshot.empty) {
-              await addDoc(staffRef, {
-                name: 'Main Admin',
-                email: email,
-                role: 'Admin',
-              });
-            }
+            await addDoc(collection(firestore, 'staff'), {
+              name: 'Main Admin',
+              email: email,
+              role: 'Admin',
+              uid: userCredential.user.uid,
+            });
           }
+          // Now that the auth user and staff doc exist, log in. This should succeed.
           await initiateEmailSignIn(auth, email, password);
         } catch (creationError) {
           let description = "Impossible de configurer le compte administrateur.";
           if (creationError instanceof FirebaseError) {
             if (creationError.code === 'auth/email-already-in-use') {
-              description = "Les informations d'identification sont incorrectes. Veuillez réessayer.";
+              // This means the user exists, so the initial login attempt failed due to a wrong password.
+              description = "Le mot de passe est incorrect. Veuillez réessayer.";
             } else if (creationError.code === 'auth/weak-password') {
-              description = 'Le mot de passe est trop faible. Il doit contenir au moins 6 caractères.';
+              description = 'Le mot de passe doit contenir au moins 6 caractères.';
             }
           }
           toast({
