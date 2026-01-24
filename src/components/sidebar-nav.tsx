@@ -44,7 +44,7 @@ export function SidebarNav() {
       href: '/dashboard',
       icon: <LayoutDashboard />,
       label: 'Tableau de bord',
-      allowedRoles: ['Admin', 'Réception', 'Entretien ménager'],
+      allowedRoles: ['Admin', 'Entretien ménager'],
     },
     {
       href: '/rooms',
@@ -62,7 +62,7 @@ export function SidebarNav() {
       href: '/clients',
       icon: <Users />,
       label: 'Clients',
-      allowedRoles: ['Admin', 'Réception'],
+      allowedRoles: ['Admin'],
     },
     {
       href: '/staff',
