@@ -56,16 +56,19 @@ export function SidebarNav() {
             ))}
           </>
         ) : (
-          menuItems.map((item) => (
-            <SidebarMenuItem key={item.href}>
-              <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={item.label}>
-                <Link href={item.href}>
-                  {item.icon}
-                  <span>{item.label}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))
+          menuItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={item.label}>
+                  <Link href={item.href}>
+                    <Icon />
+                    <span>{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })
         )}
       </SidebarMenu>
       <SidebarFooter className="mt-auto">
