@@ -28,7 +28,7 @@ export function SidebarNav() {
   const pathname = usePathname();
   const router = useRouter();
   const auth = useAuth();
-  const { role, isRoleLoading } = useAppUser();
+  const { isRoleLoading } = useAppUser();
 
   const isActive = (path: string) => {
     return pathname === path;
@@ -91,7 +91,7 @@ export function SidebarNav() {
               </SidebarMenuItem>
             ))}
           </>
-        ) : role ? (
+        ) : (
           menuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={item.label}>
@@ -102,7 +102,7 @@ export function SidebarNav() {
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))
-        ) : null}
+        )}
       </SidebarMenu>
       <SidebarFooter className="mt-auto">
         <SidebarMenu>
