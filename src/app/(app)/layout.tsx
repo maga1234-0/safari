@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Header } from '@/components/header';
 import { SidebarNav } from '@/components/sidebar-nav';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
@@ -10,6 +10,7 @@ import { NotificationProvider } from '@/context/notification-context';
 import { useUser as useFirebaseAuthUser, useAuth } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { allMenuItems } from '@/lib/menu-config';
 
 // Inner component to safely use context hooks
 function ProtectedLayout({ children }: { children: React.ReactNode }) {
@@ -17,6 +18,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const { role, isRoleLoading } = useAppUser();
   const auth = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -39,6 +41,21 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
     }
   }, [user, isAuthLoading, role, isRoleLoading, router, auth, toast]);
 
+  useEffect(() => {
+    // This effect handles redirecting users if they land on a page they don't have access to.
+    if (!isRoleLoading && role) {
+      const allowedPaths = allMenuItems
+        .filter(item => item.allowedRoles.includes(role))
+        .map(item => item.href);
+
+      // Check if the current path is allowed.
+      if (allowedPaths.length > 0 && !allowedPaths.includes(pathname)) {
+        // If not, redirect to the first page they are allowed to access.
+        router.push(allowedPaths[0]);
+      }
+    }
+  }, [role, isRoleLoading, pathname, router]);
+
   const isLoading = isAuthLoading || isRoleLoading;
 
   // Show loader while auth/role is being determined, or if there's no user (as redirect is happening)
@@ -59,6 +76,19 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
+  
+  // Also show loader while redirecting to an authorized page to prevent content flicker
+  const allowedPaths = allMenuItems
+    .filter(item => role && item.allowedRoles.includes(role))
+    .map(item => item.href);
+  if (allowedPaths.length > 0 && !allowedPaths.includes(pathname)) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
 
   return (
     <SidebarProvider>

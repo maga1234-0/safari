@@ -10,19 +10,14 @@ import {
   SidebarMenuSkeleton,
 } from '@/components/ui/sidebar';
 import {
-  LayoutDashboard,
-  BedDouble,
-  CalendarCheck2,
-  Users,
   LogOut,
   Home,
-  UserCog,
-  Building,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/firebase';
 import { useUser as useAppUser } from '@/context/user-context';
+import { allMenuItems } from '@/lib/menu-config';
 
 export function SidebarNav() {
   const pathname = usePathname();
@@ -38,45 +33,6 @@ export function SidebarNav() {
     auth.signOut();
     router.push('/login');
   };
-
-  const allMenuItems = [
-    {
-      href: '/dashboard',
-      icon: <LayoutDashboard />,
-      label: 'Tableau de bord',
-      allowedRoles: ['Admin', 'Entretien ménager'],
-    },
-    {
-      href: '/rooms',
-      icon: <BedDouble />,
-      label: 'Chambres',
-      allowedRoles: ['Admin', 'Réception', 'Entretien ménager'],
-    },
-    {
-      href: '/reservations',
-      icon: <CalendarCheck2 />,
-      label: 'Réservations',
-      allowedRoles: ['Admin', 'Réception'],
-    },
-    {
-      href: '/clients',
-      icon: <Users />,
-      label: 'Clients',
-      allowedRoles: ['Admin'],
-    },
-    {
-      href: '/staff',
-      icon: <UserCog />,
-      label: 'Personnel',
-      allowedRoles: ['Admin'],
-    },
-    {
-      href: '/configuration',
-      icon: <Building />,
-      label: 'Config Hôtel',
-      allowedRoles: ['Admin'],
-    },
-  ];
 
   const menuItems = allMenuItems.filter(item => role && item.allowedRoles.includes(role));
 
