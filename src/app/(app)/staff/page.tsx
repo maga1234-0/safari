@@ -20,7 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import type { StaffMember, StaffRole } from '@/lib/types';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
-import { PlusCircle, Edit, Trash, Search } from 'lucide-react';
+import { PlusCircle, Edit, Trash, Search, Eye, EyeOff } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -40,9 +40,9 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
-import { collection, doc, query } from 'firebase/firestore';
+import { collection, doc, query, where, getDocs } from 'firebase/firestore';
 import { FirebaseError, initializeApp, deleteApp } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword, type UserCredential } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, type UserCredential, signInWithEmailAndPassword } from 'firebase/auth';
 import { firebaseConfig } from '@/firebase/config';
 
 const roleVariant: Record<StaffRole, BadgeProps['variant']> = {
@@ -64,6 +64,20 @@ const createAuthUserWithoutSigningOut = async (email: string, password: string):
   }
 };
 
+const signInUserWithoutSigningOut = async (email: string, password: string): Promise<UserCredential> => {
+  const tempAppName = `temp-signin-${Date.now()}`;
+  const tempApp = initializeApp(firebaseConfig, tempAppName);
+  const tempAuth = getAuth(tempApp);
+
+  try {
+    const userCredential = await signInWithEmailAndPassword(tempAuth, email, password);
+    return userCredential;
+  } finally {
+    await deleteApp(tempApp);
+  }
+};
+
+
 export default function StaffPage() {
   const { toast } = useToast();
   const firestore = useFirestore();
@@ -83,6 +97,7 @@ export default function StaffPage() {
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<StaffRole | ''>('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleOpenAddDialog = () => {
     setDialogMode('add');
@@ -91,6 +106,7 @@ export default function StaffPage() {
     setEmail('');
     setRole('');
     setPassword('');
+    setShowPassword(false);
     setDialogOpen(true);
   };
 
@@ -101,6 +117,7 @@ export default function StaffPage() {
     setEmail(staffMember.email);
     setRole(staffMember.role);
     setPassword('');
+    setShowPassword(false);
     setDialogOpen(true);
   };
   
@@ -146,28 +163,59 @@ export default function StaffPage() {
         });
 
       } catch (error) {
-        let description = 'Impossible de créer le membre du personnel.';
-        if (error instanceof FirebaseError) {
-          switch (error.code) {
-            case 'auth/email-already-in-use':
-              description = 'Un compte avec cet email existe déjà.';
-              break;
-            case 'auth/invalid-email':
-              description = "L'adresse email n'est pas valide.";
-              break;
-            case 'auth/weak-password':
-              description = 'Le mot de passe doit contenir au moins 6 caractères.';
-              break;
-            default:
-              description = `Une erreur est survenue: ${error.message}`;
+        if (error instanceof FirebaseError && error.code === 'auth/email-already-in-use') {
+          try {
+            const existingUserCredential = await signInUserWithoutSigningOut(email, password);
+            const uid = existingUserCredential.user.uid;
+
+            const staffWithUidQuery = query(collection(firestore, 'staff'), where('uid', '==', uid));
+            const querySnapshot = await getDocs(staffWithUidQuery);
+
+            if (!querySnapshot.empty) {
+                toast({
+                    variant: 'destructive',
+                    title: 'Membre du personnel existant',
+                    description: 'Ce compte de connexion est déjà lié à un autre membre du personnel.',
+                });
+                return;
+            }
+            
+            staffData.uid = uid;
+            addDocumentNonBlocking(collection(firestore, 'staff'), staffData);
+
+            toast({
+                title: 'Membre du Personnel Ajouté',
+                description: `${name} a été lié à un compte de connexion existant.`,
+            });
+          } catch (signInError) {
+               toast({
+                  variant: 'destructive',
+                  title: 'Erreur de liaison de compte',
+                  description: 'Un compte avec cet email existe déjà, mais le mot de passe fourni est incorrect.',
+              });
+              return;
           }
+        } else {
+            let description = 'Impossible de créer le membre du personnel.';
+            if (error instanceof FirebaseError) {
+              switch (error.code) {
+                case 'auth/invalid-email':
+                  description = "L'adresse email n'est pas valide.";
+                  break;
+                case 'auth/weak-password':
+                  description = 'Le mot de passe doit contenir au moins 6 caractères.';
+                  break;
+                default:
+                  description = `Une erreur est survenue: ${error.message}`;
+              }
+            }
+            toast({
+              variant: 'destructive',
+              title: 'Erreur lors de la Création du Personnel',
+              description: description,
+            });
+            return;
         }
-        toast({
-          variant: 'destructive',
-          title: 'Erreur lors de la Création du Personnel',
-          description: description,
-        });
-        return;
       }
     } else if (dialogMode === 'edit' && selectedStaff) {
       try {
@@ -365,13 +413,26 @@ export default function StaffPage() {
                 <Label htmlFor="password">
                   Mot de passe
                 </Label>
-                <Input 
-                  id="password" 
-                  type="password" 
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)} 
-                  placeholder={dialogMode === 'add' ? 'Attribuer un mot de passe (requis)' : 'Laisser vide pour ne pas changer'}
-                />
+                <div className="relative">
+                  <Input 
+                    id="password" 
+                    type={showPassword ? 'text' : 'password'}
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)} 
+                    placeholder={dialogMode === 'add' ? 'Attribuer un mot de passe (requis)' : 'Laisser vide pour ne pas changer'}
+                    className="pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute inset-y-0 right-0 h-full px-3"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4 text-gray-500" /> : <Eye className="h-4 w-4 text-gray-500" />}
+                    <span className="sr-only">Toggle password visibility</span>
+                  </Button>
+                </div>
               </div>
             </div>
             <DialogFooter>
