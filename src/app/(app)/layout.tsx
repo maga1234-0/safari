@@ -46,30 +46,41 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
     const isReadyForCheck = !isRoleLoading && user;
 
     if (isReadyForCheck) {
-        // Define all paths the user is allowed to see.
-        let allowedPaths: string[] = [];
+      // Define all paths the user is allowed to see.
+      let allowedPaths: string[] = [];
 
-        // Add role-based paths
-        if (role) {
-            allowedPaths.push(...allMenuItems
-                .filter(item => item.allowedRoles.includes(role))
-                .map(item => item.href));
-        }
+      // Add role-based paths
+      if (role) {
+        allowedPaths.push(...allMenuItems
+          .filter(item => item.allowedRoles.includes(role))
+          .map(item => item.href));
+      }
 
-        // Add special path for safari@gmail.com
-        if (user.email === 'safari@gmail.com') {
-            if (!allowedPaths.includes('/staff')) {
-                allowedPaths.push('/staff');
-            }
+      // Add special path for safari@gmail.com
+      if (user.email === 'safari@gmail.com') {
+        if (!allowedPaths.includes('/staff')) {
+          allowedPaths.push('/staff');
         }
-        
-        // Now check if the current path is in the allowed list.
-        if (allowedPaths.length > 0 && !allowedPaths.includes(pathname)) {
-            // If not, redirect to the first available path.
-            router.push(allowedPaths[0]);
-        }
+      }
+
+      // If a user has no roles/pages assigned, they can't use the app.
+      if (allowedPaths.length === 0 && user.email !== 'safari@gmail.com') {
+        toast({
+          variant: 'destructive',
+          title: 'Accès non configuré',
+          description: "Votre rôle n'a accès à aucune page. Veuillez contacter un administrateur.",
+        });
+        auth.signOut();
+        return; // Exit early
+      }
+      
+      // Now check if the current path is in the allowed list.
+      if (allowedPaths.length > 0 && !allowedPaths.includes(pathname)) {
+        // If not, redirect to the first available path.
+        router.push(allowedPaths[0]);
+      }
     }
-  }, [role, isRoleLoading, pathname, router, user]);
+  }, [role, isRoleLoading, pathname, router, user, auth, toast]);
 
   const isLoading = isAuthLoading || isRoleLoading;
 
