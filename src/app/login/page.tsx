@@ -59,8 +59,8 @@ export default function LoginPage() {
               role: 'Admin',
             });
              toast({
-              title: 'Admin Account Created',
-              description: 'Welcome! Your administrator account has been set up.',
+              title: 'Compte Administrateur Créé',
+              description: 'Bienvenue ! Votre compte administrateur a été configuré.',
             });
             // At this point, the user is signed in, and the auth state listener will trigger the redirect.
           } else {
@@ -73,34 +73,34 @@ export default function LoginPage() {
             // This means the account exists, so the password for the initial sign-in attempt was simply wrong.
             toast({
               variant: 'destructive',
-              title: 'Login Failed',
-              description: 'Incorrect password for the admin account. Please try again.',
+              title: 'Échec de la connexion',
+              description: 'Mot de passe incorrect pour le compte administrateur. Veuillez réessayer.',
             });
           } else if (signUpError instanceof FirebaseError && signUpError.code === 'auth/weak-password') {
             toast({
               variant: 'destructive',
-              title: 'Setup Failed',
-              description: 'The admin password must be at least 6 characters long.',
+              title: 'Échec de la configuration',
+              description: 'Le mot de passe administrateur doit comporter au moins 6 caractères.',
             });
           }
           else {
             // Another error occurred during the account creation attempt.
             toast({
               variant: 'destructive',
-              title: 'Admin Setup Failed',
-              description: `An unexpected error occurred: ${signUpError.message}`,
+              title: "Échec de la configuration de l'administrateur",
+              description: `Une erreur inattendue est survenue: ${signUpError.message}`,
             });
           }
         }
       } else {
         // This is a standard login failure (not the special admin case).
-        let description = 'An unknown error occurred.';
+        let description = 'Une erreur inconnue est survenue.';
         if (signInError instanceof FirebaseError && signInError.code === 'auth/invalid-credential') {
-          description = 'Invalid email or password. Please check your credentials and try again.';
+          description = 'Email ou mot de passe invalide. Veuillez vérifier vos identifiants et réessayer.';
         }
         toast({
           variant: 'destructive',
-          title: 'Login Failed',
+          title: 'Échec de la connexion',
           description: description,
         });
       }
@@ -130,7 +130,7 @@ export default function LoginPage() {
             <Home className="h-10 w-10 text-primary" />
           </div>
           <CardTitle className="text-2xl font-headline">PMS safari</CardTitle>
-          <CardDescription>Enter your credentials to access the admin panel.</CardDescription>
+          <CardDescription>Entrez vos identifiants pour accéder au panneau d'administration.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
@@ -147,7 +147,7 @@ export default function LoginPage() {
             </div>
             <div className="grid gap-2">
               <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Mot de passe</Label>
               </div>
               <div className="relative">
                 <Input 
@@ -170,13 +170,13 @@ export default function LoginPage() {
                   ) : (
                     <Eye className="h-4 w-4 text-gray-500" />
                   )}
-                  <span className="sr-only">Toggle password visibility</span>
+                  <span className="sr-only">Basculer la visibilité du mot de passe</span>
                 </Button>
               </div>
             </div>
             <Button onClick={handleLogin} disabled={isLoggingIn} className="w-full mt-2">
               {isLoggingIn && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isLoggingIn ? 'Logging In...' : 'Login'}
+              {isLoggingIn ? 'Connexion en cours...' : 'Connexion'}
             </Button>
           </div>
         </CardContent>
