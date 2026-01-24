@@ -183,7 +183,7 @@ export default function StaffPage() {
           title: 'Membre du Personnel Ajouté',
           description: `${name} peut maintenant se connecter avec son email et le mot de passe attribué.`,
         });
-
+        setDialogOpen(false);
       } catch (error) {
         if (error instanceof FirebaseError && error.code === 'auth/email-already-in-use') {
           try {
@@ -209,6 +209,7 @@ export default function StaffPage() {
                 title: 'Membre du Personnel Ajouté',
                 description: `${name} a été lié à un compte de connexion existant.`,
             });
+            setDialogOpen(false);
           } catch (signInError) {
                toast({
                   variant: 'destructive',
@@ -257,6 +258,7 @@ export default function StaffPage() {
             title: 'Membre du Personnel Mis à Jour',
             description: `Les informations de ${name} ont été mises à jour.`,
           });
+          setDialogOpen(false);
       } catch(error) {
           let description = 'Impossible de mettre à jour le membre du personnel.';
           if (error instanceof FirebaseError) {
@@ -282,8 +284,6 @@ export default function StaffPage() {
           return;
       }
     }
-
-    setDialogOpen(false);
   };
 
   const filteredStaff = useMemo(() => {
