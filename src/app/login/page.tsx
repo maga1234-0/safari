@@ -21,7 +21,7 @@ export default function LoginPage() {
   const { toast } = useToast();
 
   const [email, setEmail] = useState("safari@gmail.com");
-  const [password, setPassword] = useState("safari@#");
+  const [password, setPassword] = useState("pms1234@#");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 

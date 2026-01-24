@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useUser as useFirebaseAuthUser, useFirestore } from '@/firebase';
 import type { StaffMember, StaffRole } from '@/lib/types';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, setDoc } from 'firebase/firestore';
 
 interface UserContextType {
   avatar: string;
@@ -38,6 +38,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (isAuthLoading) {
+      setIsRoleLoading(true);
       return;
     }
     
@@ -56,10 +57,29 @@ export function UserProvider({ children }: { children: ReactNode }) {
         const staffData = snapshot.docs[0].data() as StaffMember;
         setRole(staffData.role);
         setName(staffData.name); // Also update name from Firestore record
+        setIsRoleLoading(false);
       } else {
-        setRole(null);
+        // If the user is authenticated but has no corresponding staff document
+        if (user && user.email === 'safari@gmail.com') {
+            // This is the designated admin user. Let's create their staff record.
+            const staffDocRef = doc(collection(firestore, 'staff'));
+            setDoc(staffDocRef, {
+                uid: user.uid,
+                name: 'Safari Admin',
+                email: user.email,
+                role: 'Admin',
+            }).catch(e => {
+                console.error("Failed to auto-create admin staff record:", e);
+                setRole(null);
+                setIsRoleLoading(false);
+            });
+            // We don't set isRoleLoading to false here; we wait for the snapshot to refire with the new data.
+        } else {
+             // This is a non-admin user who was deleted from staff list
+            setRole(null);
+            setIsRoleLoading(false);
+        }
       }
-      setIsRoleLoading(false);
     }, (error) => {
       console.error("Error fetching user role: ", error);
       setRole(null);
