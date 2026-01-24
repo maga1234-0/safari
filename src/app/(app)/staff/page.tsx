@@ -39,10 +39,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking, useAuth, useUser as useFirebaseAuthUser } from '@/firebase';
 import { collection, doc, query, where, getDocs } from 'firebase/firestore';
 import { FirebaseError, initializeApp, deleteApp } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword, type UserCredential, signInWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, type UserCredential, signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { firebaseConfig } from '@/firebase/config';
 
 const roleVariant: Record<StaffRole, BadgeProps['variant']> = {
@@ -81,6 +81,8 @@ const signInUserWithoutSigningOut = async (email: string, password: string): Pro
 export default function StaffPage() {
   const { toast } = useToast();
   const firestore = useFirestore();
+  const auth = useAuth();
+  const { user: currentUser } = useFirebaseAuthUser();
 
   const staffQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -128,6 +130,26 @@ export default function StaffPage() {
       title: 'Membre du Personnel Supprimé',
       description: 'Le membre du personnel a été supprimé.',
     });
+  };
+
+  const handleResetPassword = async (email: string) => {
+    if (!auth) {
+        toast({ variant: 'destructive', title: 'Erreur', description: "Le service d'authentification n'est pas disponible." });
+        return;
+    }
+    try {
+        await sendPasswordResetEmail(auth, email);
+        toast({
+            title: 'Email de Réinitialisation Envoyé',
+            description: `Un email a été envoyé à ${email} avec des instructions pour réinitialiser le mot de passe.`,
+        });
+    } catch (error) {
+        toast({
+            variant: 'destructive',
+            title: 'Échec de l\'envoi de l\'email',
+            description: "Impossible d'envoyer l'email de réinitialisation. Veuillez vérifier que l'adresse email est correcte.",
+        });
+    }
   };
 
   const handleSave = async () => {
@@ -313,13 +335,18 @@ export default function StaffPage() {
                       <Badge variant={roleVariant[staffMember.role]}>{staffMember.role}</Badge>
                     </div>
                 </CardHeader>
-                <CardFooter className="p-4 pt-0 flex justify-end gap-2">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(staffMember)}>
-                      <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(staffMember.id)}>
-                      <Trash className="h-4 w-4" />
-                  </Button>
+                <CardFooter className="p-4 pt-0 flex justify-between items-center">
+                  <div>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(staffMember)}>
+                        <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(staffMember.id)}>
+                        <Trash className="h-4 w-4" />
+                    </Button>
+                  </div>
+                   {currentUser?.email === 'safari@gmail.com' && staffMember.uid && (
+                      <Button variant="outline" size="sm" onClick={() => handleResetPassword(staffMember.email)}>Réinitialiser MDP</Button>
+                  )}
                 </CardFooter>
               </Card>
             ))}
@@ -345,6 +372,11 @@ export default function StaffPage() {
                       <Badge variant={roleVariant[staffMember.role]}>{staffMember.role}</Badge>
                     </TableCell>
                     <TableCell className="text-right">
+                        {currentUser?.email === 'safari@gmail.com' && staffMember.uid && (
+                            <Button variant="outline" size="sm" className="mr-2" onClick={() => handleResetPassword(staffMember.email)}>
+                                Réinitialiser MDP
+                            </Button>
+                        )}
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(staffMember)}>
                             <Edit className="h-4 w-4" />
                         </Button>
@@ -437,3 +469,5 @@ export default function StaffPage() {
     </div>
   );
 }
+
+    
