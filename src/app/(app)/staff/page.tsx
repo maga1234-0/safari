@@ -219,15 +219,6 @@ export default function StaffPage() {
       }
     } else if (dialogMode === 'edit' && selectedStaff) {
       try {
-          if (selectedStaff.uid && password) {
-             toast({
-                variant: 'destructive',
-                title: 'Modification du Mot de Passe Non Prise en Charge',
-                description: "Pour des raisons de sécurité, la modification directe du mot de passe n'est pas possible. Le membre du personnel doit changer son propre mot de passe via la page des paramètres.",
-            });
-            return;
-          }
-
           if (!selectedStaff.uid && password) {
              const userCredential = await createAuthUserWithoutSigningOut(email, password);
              staffData.uid = userCredential.user.uid;
@@ -409,31 +400,33 @@ export default function StaffPage() {
                     </SelectContent>
                 </Select>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">
-                  Mot de passe
-                </Label>
-                <div className="relative">
-                  <Input 
-                    id="password" 
-                    type={showPassword ? 'text' : 'password'}
-                    value={password} 
-                    onChange={(e) => setPassword(e.target.value)} 
-                    placeholder={dialogMode === 'add' ? 'Attribuer un mot de passe (requis)' : 'Laisser vide pour ne pas changer'}
-                    className="pr-10"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute inset-y-0 right-0 h-full px-3"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4 text-gray-500" /> : <Eye className="h-4 w-4 text-gray-500" />}
-                    <span className="sr-only">Toggle password visibility</span>
-                  </Button>
+              {(dialogMode === 'add' || (dialogMode === 'edit' && !selectedStaff?.uid)) && (
+                <div className="grid gap-2">
+                  <Label htmlFor="password">
+                    Mot de passe
+                  </Label>
+                  <div className="relative">
+                    <Input 
+                      id="password" 
+                      type={showPassword ? 'text' : 'password'}
+                      value={password} 
+                      onChange={(e) => setPassword(e.target.value)} 
+                      placeholder={dialogMode === 'add' ? 'Attribuer un mot de passe (requis)' : 'Attribuer des identifiants'}
+                      className="pr-10"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute inset-y-0 right-0 h-full px-3"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4 text-gray-500" /> : <Eye className="h-4 w-4 text-gray-500" />}
+                      <span className="sr-only">Toggle password visibility</span>
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
             <DialogFooter>
               <Button onClick={handleSave}>Sauvegarder les modifications</Button>
