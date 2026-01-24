@@ -28,7 +28,7 @@ export function SidebarNav() {
   const pathname = usePathname();
   const router = useRouter();
   const auth = useAuth();
-  const { isRoleLoading } = useAppUser();
+  const { role, isRoleLoading } = useAppUser();
 
   const isActive = (path: string) => {
     return pathname === path;
@@ -39,38 +39,46 @@ export function SidebarNav() {
     router.push('/login');
   };
 
-  const menuItems = [
+  const allMenuItems = [
     {
       href: '/dashboard',
       icon: <LayoutDashboard />,
       label: 'Tableau de bord',
+      allowedRoles: ['Admin', 'Réception', 'Entretien ménager'],
     },
     {
       href: '/rooms',
       icon: <BedDouble />,
       label: 'Chambres',
+      allowedRoles: ['Admin', 'Réception', 'Entretien ménager'],
     },
     {
       href: '/reservations',
       icon: <CalendarCheck2 />,
       label: 'Réservations',
+      allowedRoles: ['Admin', 'Réception'],
     },
     {
       href: '/clients',
       icon: <Users />,
       label: 'Clients',
+      allowedRoles: ['Admin', 'Réception'],
     },
     {
       href: '/staff',
       icon: <UserCog />,
       label: 'Personnel',
+      allowedRoles: ['Admin'],
     },
     {
       href: '/configuration',
       icon: <Building />,
       label: 'Config Hôtel',
+      allowedRoles: ['Admin'],
     },
   ];
+
+  const menuItems = allMenuItems.filter(item => role && item.allowedRoles.includes(role));
 
   return (
     <Sidebar collapsible="icon">
@@ -85,7 +93,7 @@ export function SidebarNav() {
       <SidebarMenu>
         {isRoleLoading ? (
           <>
-            {Array.from({ length: menuItems.length }).map((_, index) => (
+            {Array.from({ length: allMenuItems.length }).map((_, index) => (
               <SidebarMenuItem key={index}>
                 <SidebarMenuSkeleton showIcon />
               </SidebarMenuItem>
