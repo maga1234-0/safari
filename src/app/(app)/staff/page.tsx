@@ -469,5 +469,3 @@ export default function StaffPage() {
     </div>
   );
 }
-
-    
