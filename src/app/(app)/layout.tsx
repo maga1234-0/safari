@@ -30,7 +30,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
     // If auth and role checks are done, but the logged-in user has no role,
     // it means they've been deleted from the staff list. Sign them out.
-    if (!isAuthLoading && user && !isRoleLoading && role === null) {
+    if (!isAuthLoading && user && user.email !== 'safari@gmail.com' && !isRoleLoading && role === null) {
       toast({
         variant: 'destructive',
         title: 'Accès non autorisé',
@@ -43,18 +43,33 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // This effect handles redirecting users if they land on a page they don't have access to.
-    if (!isRoleLoading && role) {
-      const allowedPaths = allMenuItems
-        .filter(item => item.allowedRoles.includes(role))
-        .map(item => item.href);
+    const isReadyForCheck = !isRoleLoading && user;
 
-      // Check if the current path is allowed.
-      if (allowedPaths.length > 0 && !allowedPaths.includes(pathname)) {
-        // If not, redirect to the first page they are allowed to access.
-        router.push(allowedPaths[0]);
-      }
+    if (isReadyForCheck) {
+        // Define all paths the user is allowed to see.
+        let allowedPaths: string[] = [];
+
+        // Add role-based paths
+        if (role) {
+            allowedPaths.push(...allMenuItems
+                .filter(item => item.allowedRoles.includes(role))
+                .map(item => item.href));
+        }
+
+        // Add special path for safari@gmail.com
+        if (user.email === 'safari@gmail.com') {
+            if (!allowedPaths.includes('/staff')) {
+                allowedPaths.push('/staff');
+            }
+        }
+        
+        // Now check if the current path is in the allowed list.
+        if (allowedPaths.length > 0 && !allowedPaths.includes(pathname)) {
+            // If not, redirect to the first available path.
+            router.push(allowedPaths[0]);
+        }
     }
-  }, [role, isRoleLoading, pathname, router]);
+  }, [role, isRoleLoading, pathname, router, user]);
 
   const isLoading = isAuthLoading || isRoleLoading;
 
@@ -67,28 +82,14 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
     );
   }
   
-  // This prevents a flash of content if a user is logged in but has no role.
-  // The useEffect above will handle the sign-out and redirect.
-  if (role === null) {
+  // This prevents a flash of content if a user is logged in but has no role, or is being redirected.
+  if (role === null && user.email !== 'safari@gmail.com') {
      return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
-  
-  // Also show loader while redirecting to an authorized page to prevent content flicker
-  const allowedPaths = allMenuItems
-    .filter(item => role && item.allowedRoles.includes(role))
-    .map(item => item.href);
-  if (allowedPaths.length > 0 && !allowedPaths.includes(pathname)) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
 
   return (
     <SidebarProvider>
