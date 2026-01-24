@@ -227,10 +227,12 @@ export default function StaffPage() {
 
   const filteredStaff = useMemo(() => {
     if (!staff) return [];
-    return staff.filter(staffMember =>
-      staffMember.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      staffMember.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    return staff
+      .filter(staffMember => staffMember.email !== 'safari@gmail.com')
+      .filter(staffMember =>
+        staffMember.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        staffMember.email.toLowerCase().includes(searchTerm.toLowerCase())
+      );
   }, [staff, searchTerm]);
 
   return (
