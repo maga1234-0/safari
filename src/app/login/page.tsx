@@ -20,8 +20,8 @@ export default function LoginPage() {
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
 
-  const [email, setEmail] = useState("safari@gmail.com");
-  const [password, setPassword] = useState("pms1234@#");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
@@ -95,7 +95,7 @@ export default function LoginPage() {
       } else {
         // This is a standard login failure (not the special admin case).
         let description = 'Une erreur inconnue est survenue.';
-        if (signInError instanceof FirebaseError && signInError.code === 'auth/invalid-credential') {
+        if (signInError instanceof FirebaseError && (signInError.code === 'auth/invalid-credential' || signInError.code === 'auth/user-not-found' || signInError.code === 'auth/wrong-password')) {
           description = 'Email ou mot de passe invalide. Veuillez vérifier vos identifiants et réessayer.';
         }
         toast({
@@ -142,7 +142,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="safari@gmail.com"
+                placeholder="email@example.com"
               />
             </div>
             <div className="grid gap-2">
