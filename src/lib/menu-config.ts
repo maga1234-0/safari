@@ -22,7 +22,7 @@ export const allMenuItems: {
       href: '/dashboard',
       icon: LayoutDashboard,
       label: 'Tableau de bord',
-      allowedRoles: ['Admin', 'Entretien ménager'],
+      allowedRoles: ['Admin'],
     },
     {
       href: '/rooms',
