@@ -404,33 +404,41 @@ export default function StaffPage() {
                     </SelectContent>
                 </Select>
               </div>
-              {(dialogMode === 'add' || (dialogMode === 'edit' && !selectedStaff?.uid)) && (
-                <div className="grid gap-2">
-                  <Label htmlFor="password">
-                    Mot de passe
-                  </Label>
-                  <div className="relative">
-                    <Input 
-                      id="password" 
-                      type={showPassword ? 'text' : 'password'}
-                      value={password} 
-                      onChange={(e) => setPassword(e.target.value)} 
-                      placeholder={dialogMode === 'add' ? 'Attribuer un mot de passe (requis)' : 'Attribuer des identifiants'}
-                      className="pr-10"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute inset-y-0 right-0 h-full px-3"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4 text-gray-500" /> : <Eye className="h-4 w-4 text-gray-500" />}
-                      <span className="sr-only">Toggle password visibility</span>
-                    </Button>
-                  </div>
+              <div className="grid gap-2">
+                <Label htmlFor="password">
+                  Mot de passe
+                </Label>
+                <div className="relative">
+                  <Input 
+                    id="password" 
+                    type={showPassword ? 'text' : 'password'}
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)} 
+                    placeholder={
+                      dialogMode === 'add' ? 'Attribuer un mot de passe (requis)' : 
+                      (selectedStaff?.uid ? 'Mot de passe non modifiable' : 'Attribuer des identifiants')
+                    }
+                    className="pr-10"
+                    disabled={dialogMode === 'edit' && !!selectedStaff?.uid}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute inset-y-0 right-0 h-full px-3"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    disabled={dialogMode === 'edit' && !!selectedStaff?.uid}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4 text-gray-500" /> : <Eye className="h-4 w-4 text-gray-500" />}
+                    <span className="sr-only">Basculer la visibilité du mot de passe</span>
+                  </Button>
                 </div>
-              )}
+                {dialogMode === 'edit' && !!selectedStaff?.uid && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Pour la sécurité, les mots de passe ne peuvent être modifiés. Pour réinitialiser, supprimez puis recréez ce membre du personnel.
+                  </p>
+                )}
+              </div>
             </div>
             <DialogFooter>
               <Button onClick={handleSave}>Sauvegarder les modifications</Button>
