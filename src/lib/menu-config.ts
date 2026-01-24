@@ -46,7 +46,7 @@ export const allMenuItems: {
       href: '/staff',
       icon: UserCog,
       label: 'Personnel',
-      allowedRoles: ['Admin'],
+      allowedRoles: [],
     },
     {
       href: '/configuration',
