@@ -63,6 +63,9 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
         }
       }
 
+      // All logged-in users can access their own settings page
+      allowedPaths.push('/settings');
+
       // If a user has no roles/pages assigned, they can't use the app.
       if (allowedPaths.length === 0 && user.email !== 'safari@gmail.com') {
         toast({

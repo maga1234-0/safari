@@ -1,6 +1,6 @@
 # PMS Safari - Logiciel de Gestion Hôtelière
 
-PMS Safari est une application web moderne conçue pour simplifier la gestion des opérations hôtelières. Construite avec une technologie de pointe, elle offre une interface intuitive et des fonctionnalités robustes pour les hôtels, en particulier ceux du marché africain.
+PMS Safari est une application web moderne conçue pour simplifier la gestion des opérations hôtelières. Construite avec une technologie de pointe, elle offre une interface intuitive et des fonctionnalités robustes pour les hôtels, en particulier ceux du marché mondial modern.
 
 ## ✨ Fonctionnalités
 
