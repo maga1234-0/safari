@@ -11,6 +11,7 @@ import { useUser as useFirebaseAuthUser, useAuth } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { allMenuItems } from '@/lib/menu-config';
+import { useSessionTimeout } from '@/hooks/use-session-timeout';
 
 // Inner component to safely use context hooks
 function ProtectedLayout({ children }: { children: React.ReactNode }) {
@@ -20,6 +21,8 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
+
+  useSessionTimeout();
 
   useEffect(() => {
     // If auth check is done and there's no user, redirect to login
