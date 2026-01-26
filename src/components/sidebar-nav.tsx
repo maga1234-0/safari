@@ -51,7 +51,7 @@ export function SidebarNav() {
         <div className="flex items-center gap-2">
           <Home className="h-8 w-8 text-sidebar-primary" />
           <h1 className="text-xl font-semibold font-headline text-primary-foreground group-data-[state=collapsed]:hidden">
-            PMS safari
+            safari hotel manager
           </h1>
         </div>
       </SidebarHeader>

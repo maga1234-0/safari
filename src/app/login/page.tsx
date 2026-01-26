@@ -129,7 +129,7 @@ export default function LoginPage() {
           <div className="flex justify-center items-center mb-4">
             <Home className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-headline">PMS safari</CardTitle>
+          <CardTitle className="text-2xl font-headline">safari hotel manager</CardTitle>
           <CardDescription>Entrez vos identifiants pour accéder au panneau d'administration.</CardDescription>
         </CardHeader>
         <CardContent>

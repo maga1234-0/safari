@@ -5,7 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
-  title: 'PMS safari',
+  title: 'safari hotel manager',
   description: 'Logiciel hôtelier pour les hôtels modernes d’Afrique',
 };
 
@@ -25,7 +25,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icon.svg" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="PMS safari" />
+        <meta name="apple-mobile-web-app-title" content="safari hotel manager" />
       </head>
       <body className="font-body antialiased">
         <ThemeProvider
