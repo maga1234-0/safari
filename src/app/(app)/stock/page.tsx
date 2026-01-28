@@ -194,6 +194,57 @@ export default function StockPage() {
           </div>
         </CardHeader>
         <CardContent>
+          {/* Mobile View */}
+          <div className="grid gap-4 md:hidden">
+            {filteredStockItems?.map((item, index) => (
+              <Card
+                key={item.id}
+                className="animate-slide-in-from-bottom transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
+              >
+                <CardHeader className="flex flex-row items-center justify-between p-4">
+                  <div>
+                    <CardTitle className="text-lg">{item.name}</CardTitle>
+                    <CardDescription>{item.category}</CardDescription>
+                  </div>
+                  <div className="text-lg font-bold">{item.quantity} {item.unit}</div>
+                </CardHeader>
+                <CardContent className="p-4 pt-0">
+                  <p className="text-sm text-muted-foreground">
+                    Dernière màj: {item.lastUpdated ? format(toDateSafe(item.lastUpdated), 'dd/MM/yyyy HH:mm') : 'En attente...'}
+                  </p>
+                </CardContent>
+                <CardFooter className="p-4 pt-0 flex justify-end gap-2">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(item)}>
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive">
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Êtes-vous absolument sûr(e) ?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Cette action est irréversible. L'article sera définitivement supprimé de votre inventaire.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDelete(item.id)} className={buttonVariants({ variant: 'destructive' })}>
+                          Supprimer
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+
+          {/* Desktop view */}
           <div className="hidden md:block">
             <Table>
               <TableHeader>

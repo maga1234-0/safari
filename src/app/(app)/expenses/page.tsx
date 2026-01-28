@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -187,6 +186,57 @@ export default function ExpensesPage() {
           </div>
         </CardHeader>
         <CardContent>
+          {/* Mobile view */}
+          <div className="grid gap-4 md:hidden">
+            {filteredExpenses?.map((expense, index) => (
+              <Card
+                key={expense.id}
+                className="animate-slide-in-from-bottom transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
+              >
+                <CardHeader className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg">{expense.description}</CardTitle>
+                      <CardDescription>{expense.category}</CardDescription>
+                    </div>
+                    <div className="text-lg font-bold">${expense.amount.toFixed(2)}</div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 pt-0">
+                  <p className="text-sm text-muted-foreground">{format(toDateSafe(expense.date), 'EEE, d MMM, yyyy')}</p>
+                </CardContent>
+                <CardFooter className="p-4 pt-0 flex justify-end gap-2">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(expense)}>
+                        <Edit className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive">
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Êtes-vous absolument sûr(e) ?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Cette action est irréversible. La dépense sera définitivement supprimée.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Annuler</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(expense.id)} className={buttonVariants({ variant: 'destructive' })}>
+                            Supprimer
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+
+          {/* Desktop view */}
           <div className="hidden md:block">
             <Table>
               <TableHeader>
