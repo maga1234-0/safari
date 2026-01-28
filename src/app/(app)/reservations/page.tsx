@@ -18,9 +18,20 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
-import type { Booking, BookingStatus, PaymentStatus, Room } from '@/lib/types';
-import { Button } from '@/components/ui/button';
+import type { Booking, BookingStatus, PaymentStatus, Room, RoomStatus } from '@/lib/types';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { PlusCircle, Edit, Trash, Search } from 'lucide-react';
 import {
   Dialog,
@@ -164,12 +175,29 @@ export default function ReservationsPage() {
         return;
     }
 
-    const roomRef = doc(firestore, 'rooms', roomId);
-    const newRoomStatus = status === 'Annulée' || status === 'Parti' ? 'Disponible' : 'Occupée';
+    if (
+        (dialogMode === 'add' && selectedRoom.status !== 'Disponible') ||
+        (dialogMode === 'edit' && selectedBooking?.roomId !== roomId && selectedRoom.status !== 'Disponible')
+    ) {
+        toast({
+            variant: 'destructive',
+            title: 'Chambre Non Disponible',
+            description: `La chambre ${selectedRoom.roomNumber} n'est plus disponible. Veuillez en sélectionner une autre.`,
+        });
+        if (dialogMode === 'add') setRoomId('');
+        return;
+    }
 
+    const roomRef = doc(firestore, 'rooms', roomId);
+    let roomStatusUpdate: { status: RoomStatus } | null = null;
+    if (status === 'Enregistré') {
+        roomStatusUpdate = { status: 'Occupée' };
+    } else if (status === 'Parti' || status === 'Annulée') {
+        roomStatusUpdate = { status: 'Disponible' };
+    }
+    
     const nights = differenceInDays(checkOut, checkIn);
     const nightsCount = nights > 0 ? nights : 1;
-
     const statusesThatImplyPaid: BookingStatus[] = ['Confirmée', 'Enregistré', 'Parti'];
 
     if (dialogMode === 'add') {
@@ -188,18 +216,23 @@ export default function ReservationsPage() {
         totalAmount,
       };
       addDocumentNonBlocking(collection(firestore, 'reservations'), newBooking);
-      updateDocumentNonBlocking(roomRef, { status: newRoomStatus });
+      if (roomStatusUpdate) {
+        updateDocumentNonBlocking(roomRef, roomStatusUpdate);
+      }
       toast({
         title: 'Réservation Ajoutée',
         description: `La réservation pour ${clientName} a été créée.`,
       });
     } else if (dialogMode === 'edit' && selectedBooking) {
-      if (selectedBooking.roomId !== roomId) {
-        const oldRoomRef = doc(firestore, 'rooms', selectedBooking.roomId);
-        updateDocumentNonBlocking(oldRoomRef, { status: 'Disponible' });
+      const originalStatus = selectedBooking.status;
+      const roomHasChanged = selectedBooking.roomId !== roomId;
+
+      if (roomHasChanged && originalStatus === 'Enregistré') {
+          const oldRoomRef = doc(firestore, 'rooms', selectedBooking.roomId);
+          updateDocumentNonBlocking(oldRoomRef, { status: 'Disponible' });
       }
-      
-      const pricePerNight = selectedBooking.roomId !== roomId 
+
+      const pricePerNight = roomHasChanged
         ? selectedRoom.price 
         : selectedBooking.pricePerNight ?? selectedRoom.price;
 
@@ -209,17 +242,12 @@ export default function ReservationsPage() {
       if (statusesThatImplyPaid.includes(status as BookingStatus)) {
         newPaymentStatus = 'Payé';
       } else if (status === 'Annulée') {
-        if (selectedBooking.paymentStatus === 'Payé') {
-            newPaymentStatus = 'Remboursé';
-        } else {
-            newPaymentStatus = 'En attente';
-        }
+        newPaymentStatus = selectedBooking.paymentStatus === 'Payé' ? 'Remboursé' : 'En attente';
       } else {
         newPaymentStatus = 'En attente';
       }
 
       const updatedBooking = { 
-        ...selectedBooking, 
         clientName, 
         roomId,
         roomNumber: selectedRoom.roomNumber,
@@ -231,7 +259,13 @@ export default function ReservationsPage() {
         paymentStatus: newPaymentStatus,
       };
       updateDocumentNonBlocking(doc(firestore, 'reservations', selectedBooking.id), updatedBooking);
-      updateDocumentNonBlocking(roomRef, { status: newRoomStatus });
+
+      if (roomStatusUpdate) {
+          updateDocumentNonBlocking(roomRef, roomStatusUpdate);
+      } else if (!roomHasChanged && originalStatus === 'Enregistré' && status !== 'Enregistré') {
+          updateDocumentNonBlocking(roomRef, { status: 'Disponible' });
+      }
+
       toast({
         title: 'Réservation Mise à Jour',
         description: `La réservation pour ${clientName} a été mise à jour.`,
@@ -244,8 +278,12 @@ export default function ReservationsPage() {
   const handleDelete = (booking: Booking) => {
     if (!firestore) return;
     deleteDocumentNonBlocking(doc(firestore, 'reservations', booking.id));
-    const roomRef = doc(firestore, 'rooms', booking.roomId);
-    updateDocumentNonBlocking(roomRef, { status: 'Disponible' });
+
+    if (booking.status === 'Enregistré') {
+        const roomRef = doc(firestore, 'rooms', booking.roomId);
+        updateDocumentNonBlocking(roomRef, { status: 'Disponible' });
+    }
+
     toast({
       title: 'Réservation Supprimée',
       description: 'La réservation a été supprimée.',
@@ -332,9 +370,27 @@ export default function ReservationsPage() {
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(booking)}>
                         <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(booking)}>
-                        <Trash className="h-4 w-4" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive">
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Êtes-vous absolument sûr(e) ?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Cette action est irréversible. La réservation pour {booking.clientName} pour la chambre {booking.roomNumber} sera définitivement supprimée.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Annuler</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(booking)} className={buttonVariants({ variant: 'destructive' })}>
+                            Supprimer
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                 </CardFooter>
             </Card>
             ))}
@@ -371,9 +427,27 @@ export default function ReservationsPage() {
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(booking)}>
                           <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(booking)}>
-                          <Trash className="h-4 w-4" />
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive">
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Êtes-vous absolument sûr(e) ?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Cette action est irréversible. La réservation pour {booking.clientName} pour la chambre {booking.roomNumber} sera définitivement supprimée.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Annuler</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDelete(booking)} className={buttonVariants({ variant: 'destructive' })}>
+                              Supprimer
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))}
