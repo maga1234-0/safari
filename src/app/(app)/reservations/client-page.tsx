@@ -409,10 +409,6 @@ export default function ReservationsClientPage() {
                         <span className="font-medium text-foreground">Départ: </span>
                         {format(toDateSafe(booking.checkOut), 'EEE, d MMM, yyyy')}
                     </div>
-                     <div className="text-sm text-muted-foreground">
-                        <span className="font-medium text-foreground">Prix / Nuit: </span>
-                        ${(booking.pricePerNight ?? 0).toFixed(2)}
-                    </div>
                     <div className="text-lg font-bold text-right">
                         ${calculateTotal(booking).toFixed(2)}
                     </div>
@@ -457,7 +453,6 @@ export default function ReservationsClientPage() {
                   <TableHead>Arrivée</TableHead>
                   <TableHead>Départ</TableHead>
                   <TableHead>Statut</TableHead>
-                  <TableHead>Prix / Nuit</TableHead>
                   <TableHead>Total</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -474,7 +469,6 @@ export default function ReservationsClientPage() {
                         {booking.status}
                       </Badge>
                     </TableCell>
-                    <TableCell>${(booking.pricePerNight ?? 0).toFixed(2)}</TableCell>
                     <TableCell>${calculateTotal(booking).toFixed(2)}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(booking)}>
