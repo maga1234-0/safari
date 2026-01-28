@@ -48,10 +48,4 @@ export const allMenuItems: {
       label: 'Personnel',
       allowedRoles: [],
     },
-    {
-      href: '/configuration',
-      icon: Building,
-      label: 'Config Hôtel',
-      allowedRoles: ['Admin'],
-    },
   ];

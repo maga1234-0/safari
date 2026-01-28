@@ -43,11 +43,6 @@ export type StaffMember = {
   role: StaffRole;
 };
 
-export type HotelConfig = {
-  taxRate: number;
-  bookingPolicy: string;
-};
-
 export type Client = {
   id: string;
   firstName: string;
