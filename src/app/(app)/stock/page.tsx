@@ -161,7 +161,14 @@ export default function StockPage() {
     if (!stockItems) return [];
     return stockItems
       .filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()))
-      .sort((a, b) => toDateSafe(b.lastUpdated).getTime() - toDateSafe(a.lastUpdated).getTime());
+      .sort((a, b) => {
+        // Items without a timestamp are considered newest and should appear first.
+        if (!a.lastUpdated && !b.lastUpdated) return 0; // both are new
+        if (!a.lastUpdated) return -1; // a is new, b is old -> a first
+        if (!b.lastUpdated) return 1;  // b is new, a is old -> b first
+        // Both have timestamps, sort normally
+        return toDateSafe(b.lastUpdated).getTime() - toDateSafe(a.lastUpdated).getTime();
+      });
   }, [stockItems, searchTerm]);
 
 
@@ -206,7 +213,7 @@ export default function StockPage() {
                     <TableCell>{item.category}</TableCell>
                     <TableCell>{item.quantity}</TableCell>
                     <TableCell>{item.unit}</TableCell>
-                    <TableCell>{format(toDateSafe(item.lastUpdated), 'dd/MM/yyyy HH:mm')}</TableCell>
+                    <TableCell>{item.lastUpdated ? format(toDateSafe(item.lastUpdated), 'dd/MM/yyyy HH:mm') : 'En attente...'}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(item)}>
                           <Edit className="h-4 w-4" />
