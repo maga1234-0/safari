@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import { FirebaseClientProvider } from '@/firebase';
+import { PwaInstaller } from '@/components/pwa-installer';
 
 export const metadata: Metadata = {
   title: 'safari hotel manager',
@@ -39,6 +40,7 @@ export default function RootLayout({
           </FirebaseClientProvider>
           <Toaster />
         </ThemeProvider>
+        <PwaInstaller />
       </body>
     </html>
   );
