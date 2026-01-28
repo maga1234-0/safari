@@ -53,3 +53,9 @@ export type Client = {
   preferences?: string;
   notes?: string;
 };
+
+export type HotelConfiguration = {
+  id: string;
+  taxRate: number;
+  bookingPolicy: string;
+};

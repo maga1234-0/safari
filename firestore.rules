@@ -49,6 +49,11 @@ service cloud.firestore {
       allow read, list: if isStaffOrAdmin();
       allow write: if isAdmin();
     }
+    
+    match /hotel-configuration/{configId} {
+      allow read: if isStaffOrAdmin();
+      allow write: if isAdmin();
+    }
 
     match /roles_admin/{uid} {
       allow read, write: if isAdmin();

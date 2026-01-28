@@ -195,6 +195,26 @@
         "email",
         "role"
       ]
+    },
+    "HotelConfiguration": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "HotelConfiguration",
+      "type": "object",
+      "description": "Represents the global settings for the hotel.",
+      "properties": {
+        "taxRate": {
+          "type": "number",
+          "description": "The global tax rate for the hotel."
+        },
+        "bookingPolicy": {
+          "type": "string",
+          "description": "The booking policy text."
+        }
+      },
+      "required": [
+        "taxRate",
+        "bookingPolicy"
+      ]
     }
   },
   "auth": {
@@ -238,6 +258,15 @@
           "entityName": "Staff",
           "schema": {
             "$ref": "#/backend/entities/Staff"
+          }
+        }
+      },
+      {
+        "path": "/hotel-configuration/{configId}",
+        "definition": {
+          "entityName": "HotelConfiguration",
+          "schema": {
+            "$ref": "#/backend/entities/HotelConfiguration"
           }
         }
       }
