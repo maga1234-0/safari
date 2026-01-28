@@ -54,8 +54,12 @@ export type Client = {
   notes?: string;
 };
 
-export type HotelConfiguration = {
+export type ExpenseCategory = 'Salaires' | 'Marketing' | 'Maintenance' | 'Fournitures' | 'Services publics' | 'Autre';
+
+export type Expense = {
   id: string;
-  taxRate: number;
-  bookingPolicy: string;
+  description: string;
+  amount: number;
+  category: ExpenseCategory;
+  date: Date | Timestamp;
 };

@@ -196,24 +196,43 @@
         "role"
       ]
     },
-    "HotelConfiguration": {
+    "Expense": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "HotelConfiguration",
+      "title": "Expense",
       "type": "object",
-      "description": "Represents the global settings for the hotel.",
+      "description": "Represents a business expense for the hotel.",
       "properties": {
-        "taxRate": {
-          "type": "number",
-          "description": "The global tax rate for the hotel."
-        },
-        "bookingPolicy": {
+        "description": {
           "type": "string",
-          "description": "The booking policy text."
+          "description": "A brief description of the expense."
+        },
+        "amount": {
+          "type": "number",
+          "description": "The amount of the expense."
+        },
+        "category": {
+          "type": "string",
+          "description": "The category of the expense.",
+          "enum": [
+            "Salaires",
+            "Marketing",
+            "Maintenance",
+            "Fournitures",
+            "Services publics",
+            "Autre"
+          ]
+        },
+        "date": {
+          "type": "string",
+          "description": "The date the expense was incurred.",
+          "format": "date-time"
         }
       },
       "required": [
-        "taxRate",
-        "bookingPolicy"
+        "description",
+        "amount",
+        "category",
+        "date"
       ]
     }
   },
@@ -262,11 +281,11 @@
         }
       },
       {
-        "path": "/hotel-configuration/{configId}",
+        "path": "/expenses/{expenseId}",
         "definition": {
-          "entityName": "HotelConfiguration",
+          "entityName": "Expense",
           "schema": {
-            "$ref": "#/backend/entities/HotelConfiguration"
+            "$ref": "#/backend/entities/Expense"
           }
         }
       }

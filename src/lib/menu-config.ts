@@ -4,7 +4,7 @@ import {
   CalendarCheck2,
   Users,
   UserCog,
-  Building,
+  Receipt,
   type LucideProps
 } from 'lucide-react';
 import type { StaffRole } from './types';
@@ -49,9 +49,9 @@ export const allMenuItems: {
       allowedRoles: [],
     },
     {
-      href: '/hotel-config',
-      icon: Building,
-      label: 'Config Hôtel',
+      href: '/expenses',
+      icon: Receipt,
+      label: 'Dépenses',
       allowedRoles: ['Admin'],
     },
   ];
