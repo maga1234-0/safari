@@ -33,22 +33,26 @@ export function HotelConfiguration() {
 
   const { data: configData, isLoading } = useDoc<HotelConfig>(configDocRef);
 
-  const [taxRate, setTaxRate] = useState(initialHotelConfig.taxRate);
-  const [bookingPolicy, setBookingPolicy] = useState(initialHotelConfig.bookingPolicy);
+  const [taxRateInput, setTaxRateInput] = useState<string>('');
+  const [bookingPolicy, setBookingPolicy] = useState('');
 
   useEffect(() => {
-    if (configData) {
-      setTaxRate(configData.taxRate);
-      setBookingPolicy(configData.bookingPolicy);
+    if (isLoading) {
+      return;
     }
-  }, [configData]);
+    const sourceData = configData ?? initialHotelConfig;
+    setTaxRateInput(sourceData.taxRate.toString());
+    setBookingPolicy(sourceData.bookingPolicy);
+  }, [configData, isLoading]);
 
   const handleSave = () => {
     if (!firestore || !configDocRef) return;
     
+    const taxRateValue = parseFloat(taxRateInput);
+
     const newConfig = {
-        taxRate,
-        bookingPolicy
+        taxRate: isNaN(taxRateValue) ? 0 : taxRateValue,
+        bookingPolicy,
     };
 
     setDocumentNonBlocking(configDocRef, newConfig, { merge: true });
@@ -85,8 +89,8 @@ export function HotelConfiguration() {
             <Input 
               id="taxRate" 
               type="number" 
-              value={taxRate} 
-              onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)} 
+              value={taxRateInput} 
+              onChange={(e) => setTaxRateInput(e.target.value)}
             />
         </div>
         <div className="space-y-2">
