@@ -35,15 +35,17 @@ export function HotelConfiguration() {
 
   const [taxRateInput, setTaxRateInput] = useState<string>('');
   const [bookingPolicy, setBookingPolicy] = useState('');
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    if (isLoading) {
+    if (isLoading || isInitialized) {
       return;
     }
     const sourceData = configData ?? initialHotelConfig;
     setTaxRateInput(sourceData.taxRate.toString());
     setBookingPolicy(sourceData.bookingPolicy);
-  }, [configData, isLoading]);
+    setIsInitialized(true);
+  }, [configData, isLoading, isInitialized]);
 
   const handleSave = () => {
     if (!firestore || !configDocRef) return;
@@ -63,7 +65,7 @@ export function HotelConfiguration() {
     });
   };
   
-  if (isLoading) {
+  if (!isInitialized) {
       return (
           <Card>
               <CardHeader>
