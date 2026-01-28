@@ -234,6 +234,50 @@
         "category",
         "date"
       ]
+    },
+    "StockItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "StockItem",
+      "type": "object",
+      "description": "Represents an item in the hotel's inventory.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the stock item."
+        },
+        "category": {
+          "type": "string",
+          "description": "Category of the stock item.",
+          "enum": [
+            "Nourriture",
+            "Boissons",
+            "Linge de maison",
+            "Produits de nettoyage",
+            "Articles de toilette",
+            "Autre"
+          ]
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Current quantity in stock."
+        },
+        "unit": {
+          "type": "string",
+          "description": "The unit of measurement for the quantity (e.g., kg, litres, pièces)."
+        },
+        "lastUpdated": {
+          "type": "string",
+          "description": "The date the stock item was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "name",
+        "category",
+        "quantity",
+        "unit",
+        "lastUpdated"
+      ]
     }
   },
   "auth": {
@@ -286,6 +330,15 @@
           "entityName": "Expense",
           "schema": {
             "$ref": "#/backend/entities/Expense"
+          }
+        }
+      },
+      {
+        "path": "/stock/{stockItemId}",
+        "definition": {
+          "entityName": "StockItem",
+          "schema": {
+            "$ref": "#/backend/entities/StockItem"
           }
         }
       }

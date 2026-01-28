@@ -5,6 +5,7 @@ import {
   Users,
   UserCog,
   Receipt,
+  Package,
   type LucideProps
 } from 'lucide-react';
 import type { StaffRole } from './types';
@@ -52,6 +53,12 @@ export const allMenuItems: {
       href: '/expenses',
       icon: Receipt,
       label: 'Dépenses',
+      allowedRoles: ['Admin'],
+    },
+    {
+      href: '/stock',
+      icon: Package,
+      label: 'Stock',
       allowedRoles: ['Admin'],
     },
   ];

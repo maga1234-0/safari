@@ -63,3 +63,14 @@ export type Expense = {
   category: ExpenseCategory;
   date: Date | Timestamp;
 };
+
+export type StockCategory = 'Nourriture' | 'Boissons' | 'Linge de maison' | 'Produits de nettoyage' | 'Articles de toilette' | 'Autre';
+
+export type StockItem = {
+  id: string;
+  name: string;
+  category: StockCategory;
+  quantity: number;
+  unit: string;
+  lastUpdated: Date | Timestamp;
+};

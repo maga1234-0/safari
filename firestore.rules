@@ -54,6 +54,10 @@ service cloud.firestore {
       allow read, list, create, update, delete: if isAdmin();
     }
 
+    match /stock/{stockItemId} {
+      allow read, list, create, update, delete: if isAdmin();
+    }
+
     match /roles_admin/{uid} {
       allow read, write: if isAdmin();
     }
