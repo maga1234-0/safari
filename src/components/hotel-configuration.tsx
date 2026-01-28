@@ -15,8 +15,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Save, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useDoc, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc, setDoc } from 'firebase/firestore';
 import type { HotelConfig } from '@/lib/types';
 import { hotelConfig as initialHotelConfig } from '@/lib/data';
 
@@ -31,37 +31,30 @@ export function HotelConfiguration() {
     return doc(firestore, 'configuration', CONFIG_DOC_ID);
   }, [firestore]);
 
-  const { data: configData, isLoading } = useDoc<HotelConfig>(configDocRef);
+  const { data: configData, isLoading: isDataLoading } = useDoc<HotelConfig>(configDocRef);
 
   const [taxRateInput, setTaxRateInput] = useState('');
   const [bookingPolicy, setBookingPolicy] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   const isInitialized = useRef(false);
 
   useEffect(() => {
-    // If the form has already been initialized, do nothing.
     if (isInitialized.current) {
       return;
     }
-
-    // After the initial data load from Firestore is complete...
-    if (!isLoading) {
-      // Use the data from Firestore, or fall back to the initial default config.
+    if (!isDataLoading) {
       const sourceData = configData || initialHotelConfig;
-      
-      // Populate the form state with this initial data.
       setTaxRateInput(sourceData.taxRate.toString());
       setBookingPolicy(sourceData.bookingPolicy);
-      
-      // Mark the form as initialized so this logic never runs again.
-      // From now on, the form state is controlled ONLY by user input.
       isInitialized.current = true;
     }
-  }, [configData, isLoading]);
+  }, [configData, isDataLoading]);
 
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!firestore || !configDocRef) return;
     
+    setIsSaving(true);
     const taxRateValue = parseFloat(taxRateInput);
 
     const newConfig = {
@@ -69,16 +62,27 @@ export function HotelConfiguration() {
         bookingPolicy,
     };
 
-    setDocumentNonBlocking(configDocRef, newConfig, { merge: true });
-    
-    toast({
-      title: 'Paramètres Sauvegardés',
-      description: "Les paramètres de l'hôtel ont été mis à jour.",
-    });
+    try {
+        await setDoc(configDocRef, newConfig, { merge: true });
+        toast({
+            title: 'Paramètres Sauvegardés',
+            description: "Les paramètres de l'hôtel ont été mis à jour.",
+        });
+    } catch (error) {
+        console.error("Failed to save configuration:", error);
+        toast({
+            variant: 'destructive',
+            title: 'Erreur de Sauvegarde',
+            description: "Impossible d'enregistrer les modifications. Veuillez réessayer.",
+        });
+    } finally {
+        setIsSaving(false);
+    }
   };
   
-  // Show a loading spinner until the form has been initialized with data.
-  if (isLoading || !isInitialized.current) {
+  const isLoading = isDataLoading || !isInitialized.current;
+
+  if (isLoading) {
       return (
           <Card>
               <CardHeader>
@@ -106,6 +110,7 @@ export function HotelConfiguration() {
               type="number" 
               value={taxRateInput} 
               onChange={(e) => setTaxRateInput(e.target.value)}
+              disabled={isSaving}
             />
         </div>
         <div className="space-y-2">
@@ -115,12 +120,18 @@ export function HotelConfiguration() {
               value={bookingPolicy} 
               onChange={(e) => setBookingPolicy(e.target.value)} 
               rows={5} 
+              disabled={isSaving}
             />
         </div>
       </CardContent>
        <CardFooter className="border-t px-6 py-4">
-        <Button onClick={handleSave}>
-          <Save className="mr-2 h-4 w-4" /> Sauvegarder les Paramètres
+        <Button onClick={handleSave} disabled={isSaving || isLoading}>
+          {isSaving ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="mr-2 h-4 w-4" />
+          )}
+          {isSaving ? 'Enregistrement...' : 'Sauvegarder les Paramètres'}
         </Button>
       </CardFooter>
     </Card>
