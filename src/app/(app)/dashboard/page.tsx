@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -23,7 +23,7 @@ import {
   ChartConfig,
 } from '@/components/ui/chart';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import type { Booking, BookingStatus, Room } from '@/lib/types';
+import type { Booking, BookingStatus, Room, Expense } from '@/lib/types';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import {
   CircleDollarSign,
@@ -32,7 +32,7 @@ import {
   Bed,
   BedDouble,
   Wrench,
-  Building,
+  Receipt,
 } from 'lucide-react';
 import { format, differenceInDays, isToday, startOfDay, toDate, getYear, startOfYear, endOfYear } from 'date-fns';
 import { useCollection, useFirestore, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
@@ -65,6 +65,7 @@ function toDateSafe(date: any): Date {
 export default function Dashboard() {
   const firestore = useFirestore();
   const { addNotification } = useNotifications();
+  const [expenseWarningSent, setExpenseWarningSent] = useState(false);
   
   const bookingsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -77,6 +78,13 @@ export default function Dashboard() {
     return query(collection(firestore, 'rooms'));
   }, [firestore]);
   const { data: rooms, isLoading: roomsLoading } = useCollection<Room>(roomsQuery);
+
+  const expensesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'expenses'));
+  }, [firestore]);
+  const { data: expenses, isLoading: expensesLoading } = useCollection<Expense>(expensesQuery);
+
 
   useEffect(() => {
     if (!bookings || !firestore) return;
@@ -103,8 +111,8 @@ export default function Dashboard() {
   }, [bookings, firestore, addNotification]);
 
   const metrics = useMemo(() => {
-    if (!bookings || !rooms) {
-      return { totalRevenue: 0, newBookings: 0, availableRooms: 0, occupiedRooms: 0, maintenanceRooms: 0, totalRooms: 0 };
+    if (!bookings || !rooms || !expenses) {
+      return { totalRevenue: 0, totalExpenses: 0, netProfit: 0, newBookings: 0, availableRooms: 0, occupiedRooms: 0, maintenanceRooms: 0, totalRooms: 0 };
     }
 
     const revenueBookings = bookings.filter(b => 
@@ -123,6 +131,9 @@ export default function Dashboard() {
       return acc + (price * nightsCount);
     }, 0);
     
+    const totalExpenses = expenses.reduce((acc, expense) => acc + expense.amount, 0);
+    const netProfit = totalRevenue - totalExpenses;
+
     const newBookings = bookings.filter(b => isToday(toDateSafe(b.createdAt))).length;
 
     const availableRooms = rooms.filter(r => r.status === 'Disponible').length;
@@ -132,13 +143,42 @@ export default function Dashboard() {
 
     return {
       totalRevenue,
+      totalExpenses,
+      netProfit,
       newBookings,
       availableRooms,
       occupiedRooms,
       maintenanceRooms,
       totalRooms,
     };
-  }, [bookings, rooms]);
+  }, [bookings, rooms, expenses]);
+  
+  useEffect(() => {
+    if (
+        !metrics.totalRevenue || 
+        metrics.totalRevenue === 0
+    ) {
+        if(expenseWarningSent) setExpenseWarningSent(false);
+        return;
+    };
+
+    const expenseRatio = metrics.totalExpenses / metrics.totalRevenue;
+
+    if (expenseRatio >= 0.5) {
+        if (!expenseWarningSent) {
+            addNotification(
+                `Attention : Les dépenses représentent ${ (expenseRatio * 100).toFixed(0) }% des revenus bruts.`,
+                `/expenses`
+            );
+            setExpenseWarningSent(true);
+        }
+    } else {
+        if (expenseWarningSent) {
+            setExpenseWarningSent(false);
+        }
+    }
+  }, [metrics.totalRevenue, metrics.totalExpenses, addNotification, expenseWarningSent]);
+
 
   const recentBookings = useMemo(() => {
     if (!bookings) return [];
@@ -194,7 +234,7 @@ export default function Dashboard() {
     }));
   }, [bookings, rooms]);
 
-  if (bookingsLoading || roomsLoading) {
+  if (bookingsLoading || roomsLoading || expensesLoading) {
     return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>
   }
 
@@ -204,16 +244,16 @@ export default function Dashboard() {
         <Card className="animate-slide-in-from-top shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Revenu Total
+              Bénéfice Net
             </CardTitle>
             <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-headline">
-              ${metrics.totalRevenue.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ${metrics.netProfit.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
             <p className="text-xs text-muted-foreground">
-              Des réservations confirmées, enregistrées et parties
+              Revenu brut moins les dépenses
             </p>
           </CardContent>
         </Card>
@@ -269,19 +309,19 @@ export default function Dashboard() {
         </Card>
         <Card className="animate-slide-in-from-top shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl" style={{ animationDelay: '500ms', animationFillMode: 'backwards' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total des Chambres</CardTitle>
-            <Building className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Dépenses Totales</CardTitle>
+            <Receipt className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold font-headline">{metrics.totalRooms}</div>
-            <p className="text-xs text-muted-foreground">Capacité totale de l'hôtel</p>
+            <div className="text-2xl font-bold font-headline">${metrics.totalExpenses.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            <p className="text-xs text-muted-foreground">Total des dépenses enregistrées</p>
           </CardContent>
         </Card>
       </div>
       <div className="grid gap-4 md:gap-6 md:grid-cols-2">
         <Card className="lg:col-span-1 animate-slide-in-from-bottom transition-shadow duration-300 hover:shadow-lg" style={{ animationDelay: '600ms', animationFillMode: 'backwards' }}>
           <CardHeader>
-            <CardTitle className="font-headline">Aperçu des Revenus</CardTitle>
+            <CardTitle className="font-headline">Aperçu des Revenus Bruts</CardTitle>
             <CardDescription>
               Performance des revenus pour l'année en cours.
             </CardDescription>
