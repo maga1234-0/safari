@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Card,
   CardContent,
@@ -33,19 +33,31 @@ export function HotelConfiguration() {
 
   const { data: configData, isLoading } = useDoc<HotelConfig>(configDocRef);
 
-  const [taxRateInput, setTaxRateInput] = useState<string>('');
+  const [taxRateInput, setTaxRateInput] = useState('');
   const [bookingPolicy, setBookingPolicy] = useState('');
-  const [isInitialized, setIsInitialized] = useState(false);
+  const isInitialized = useRef(false);
 
   useEffect(() => {
-    if (isLoading || isInitialized) {
+    // If the form has already been initialized, do nothing.
+    if (isInitialized.current) {
       return;
     }
-    const sourceData = configData ?? initialHotelConfig;
-    setTaxRateInput(sourceData.taxRate.toString());
-    setBookingPolicy(sourceData.bookingPolicy);
-    setIsInitialized(true);
-  }, [configData, isLoading, isInitialized]);
+
+    // After the initial data load from Firestore is complete...
+    if (!isLoading) {
+      // Use the data from Firestore, or fall back to the initial default config.
+      const sourceData = configData || initialHotelConfig;
+      
+      // Populate the form state with this initial data.
+      setTaxRateInput(sourceData.taxRate.toString());
+      setBookingPolicy(sourceData.bookingPolicy);
+      
+      // Mark the form as initialized so this logic never runs again.
+      // From now on, the form state is controlled ONLY by user input.
+      isInitialized.current = true;
+    }
+  }, [configData, isLoading]);
+
 
   const handleSave = () => {
     if (!firestore || !configDocRef) return;
@@ -65,7 +77,8 @@ export function HotelConfiguration() {
     });
   };
   
-  if (!isInitialized) {
+  // Show a loading spinner until the form has been initialized with data.
+  if (isLoading || !isInitialized.current) {
       return (
           <Card>
               <CardHeader>
