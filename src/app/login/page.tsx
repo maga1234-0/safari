@@ -88,7 +88,7 @@ export default function LoginPage() {
             toast({
               variant: 'destructive',
               title: "Échec de la configuration de l'administrateur",
-              description: `Une erreur inattendue est survenue: ${signUpError.message}`,
+              description: `Une erreur inattendue est survenue: ${'\''}${'\''}${'\''}${signUpError.message}${'\''}${'\''}${'\''}`,
             });
           }
         }
@@ -113,6 +113,11 @@ export default function LoginPage() {
     setShowPassword(!showPassword);
   };
 
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    handleLogin();
+  };
+
   // Show a loading spinner while checking auth state or if the user is already logged in (and redirecting).
   if (isUserLoading || user) {
     return (
@@ -133,52 +138,54 @@ export default function LoginPage() {
           <CardDescription>Entrez vos identifiants pour accéder au panneau d'administration.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="email@example.com"
-              />
-            </div>
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Mot de passe</Label>
-              </div>
-              <div className="relative">
-                <Input 
-                  id="password" 
-                  type={showPassword ? "text" : "password"}
-                  required 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pr-10"
+          <form onSubmit={handleFormSubmit}>
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="email@example.com"
                 />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute inset-y-0 right-0 h-full px-3"
-                  onClick={togglePasswordVisibility}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-500" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-gray-500" />
-                  )}
-                  <span className="sr-only">Basculer la visibilité du mot de passe</span>
-                </Button>
               </div>
+              <div className="grid gap-2">
+                <div className="flex items-center">
+                  <Label htmlFor="password">Mot de passe</Label>
+                </div>
+                <div className="relative">
+                  <Input 
+                    id="password" 
+                    type={showPassword ? "text" : "password"}
+                    required 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute inset-y-0 right-0 h-full px-3"
+                    onClick={togglePasswordVisibility}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-gray-500" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-gray-500" />
+                    )}
+                    <span className="sr-only">Basculer la visibilité du mot de passe</span>
+                  </Button>
+                </div>
+              </div>
+              <Button type="submit" disabled={isLoggingIn} className="w-full mt-2">
+                {isLoggingIn && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLoggingIn ? 'Connexion en cours...' : 'Connexion'}
+              </Button>
             </div>
-            <Button onClick={handleLogin} disabled={isLoggingIn} className="w-full mt-2">
-              {isLoggingIn && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isLoggingIn ? 'Connexion en cours...' : 'Connexion'}
-            </Button>
-          </div>
+          </form>
         </CardContent>
       </Card>
     </div>
