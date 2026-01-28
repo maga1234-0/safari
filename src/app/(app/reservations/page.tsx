@@ -18,9 +18,20 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import type { Booking, BookingStatus, PaymentStatus, Room, RoomStatus } from '@/lib/types';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { PlusCircle, Edit, Trash, Search } from 'lucide-react';
 import {
   Dialog,
@@ -90,12 +101,28 @@ export default function ReservationsPage() {
   const [checkIn, setCheckIn] = useState<Date | undefined>();
   const [checkOut, setCheckOut] = useState<Date | undefined>();
   const [status, setStatus] = useState<BookingStatus | ''>('');
+  const [pricePerNight, setPricePerNight] = useState('');
+  const [totalAmount, setTotalAmount] = useState('');
+
+  const calculateTotal = (booking: Booking) => {
+    if (booking.totalAmount) {
+      return booking.totalAmount;
+    }
+    if (booking.pricePerNight && booking.checkIn && booking.checkOut) {
+      const checkInDay = toDateSafe(booking.checkIn);
+      const checkOutDay = toDateSafe(booking.checkOut);
+      const nights = differenceInDays(checkOutDay, checkInDay);
+      const nightsCount = nights > 0 ? nights : 1;
+      return booking.pricePerNight * nightsCount;
+    }
+    return 0;
+  }
 
   useEffect(() => {
     const roomIdFromQuery = searchParams.get('roomId');
     if (roomIdFromQuery && rooms && !prefilled) {
-      const roomExists = rooms.some(r => r.id === roomIdFromQuery);
-      if (roomExists) {
+      const room = rooms.find(r => r.id === roomIdFromQuery);
+      if (room) {
         setDialogMode('add');
         setSelectedBooking(null);
         setClientName('');
@@ -103,11 +130,48 @@ export default function ReservationsPage() {
         setCheckIn(undefined);
         setCheckOut(undefined);
         setStatus('En attente');
+        setPricePerNight(String(room.price));
+        setTotalAmount('');
         setDialogOpen(true);
         setPrefilled(true);
       }
     }
   }, [searchParams, rooms, prefilled]);
+
+  // Effect to update price per night when room changes
+  useEffect(() => {
+    if (dialogOpen && roomId) {
+        const selectedRoom = rooms?.find(r => r.id === roomId);
+        if (selectedRoom) {
+            if (dialogMode === 'add') {
+                setPricePerNight(String(selectedRoom.price));
+            } else if (selectedBooking?.roomId !== roomId) {
+                setPricePerNight(String(selectedRoom.price));
+            }
+        }
+    }
+  }, [roomId, rooms, dialogOpen, dialogMode, selectedBooking]);
+
+  // Effect to update total amount
+  useEffect(() => {
+      if (dialogOpen && checkIn && checkOut && pricePerNight) {
+          const nights = differenceInDays(checkOut, checkIn);
+          if (nights < 0) {
+              setTotalAmount('0.00');
+              return;
+          }
+          const nightsCount = nights > 0 ? nights : 1;
+          const priceValue = parseFloat(pricePerNight);
+          if (!isNaN(priceValue)) {
+              const calculatedTotal = priceValue * nightsCount;
+              setTotalAmount(calculatedTotal.toFixed(2));
+          }
+      } else if (dialogOpen) {
+          if (!checkIn || !checkOut) {
+              setTotalAmount('');
+          }
+      }
+  }, [checkIn, checkOut, pricePerNight, dialogOpen]);
 
   const availableRoomsForBooking = useMemo(() => {
     if (!rooms) return [];
@@ -130,6 +194,8 @@ export default function ReservationsPage() {
     setCheckIn(undefined);
     setCheckOut(undefined);
     setStatus('');
+    setPricePerNight('');
+    setTotalAmount('');
     setDialogOpen(true);
   };
 
@@ -141,15 +207,29 @@ export default function ReservationsPage() {
     setCheckIn(toDateSafe(booking.checkIn));
     setCheckOut(toDateSafe(booking.checkOut));
     setStatus(booking.status);
+    setPricePerNight(String(booking.pricePerNight || '0'));
+    setTotalAmount(String(booking.totalAmount ?? calculateTotal(booking)));
     setDialogOpen(true);
   };
 
   const handleSave = () => {
-    if (!clientName || !roomId || !checkIn || !checkOut || !status || !user || !firestore) {
+    if (!clientName || !roomId || !checkIn || !checkOut || !status || !user || !firestore || !pricePerNight || !totalAmount) {
       toast({
         variant: 'destructive',
         title: 'Informations Manquantes',
         description: 'Veuillez remplir tous les champs.',
+      });
+      return;
+    }
+    
+    const pricePerNightValue = parseFloat(pricePerNight);
+    const totalAmountValue = parseFloat(totalAmount);
+
+    if (isNaN(pricePerNightValue) || isNaN(totalAmountValue)) {
+      toast({
+        variant: 'destructive',
+        title: 'Valeurs Numériques Invalides',
+        description: "Le prix par nuit et le montant total doivent être des nombres valides.",
       });
       return;
     }
@@ -185,12 +265,9 @@ export default function ReservationsPage() {
         roomStatusUpdate = { status: 'Disponible' };
     }
     
-    const nights = differenceInDays(checkOut, checkIn);
-    const nightsCount = nights > 0 ? nights : 1;
     const statusesThatImplyPaid: BookingStatus[] = ['Confirmée', 'Enregistré', 'Parti'];
 
     if (dialogMode === 'add') {
-      const totalAmount = selectedRoom.price * nightsCount;
       const newBooking = {
         clientId: user.uid,
         clientName,
@@ -200,9 +277,9 @@ export default function ReservationsPage() {
         checkOut,
         status: status as BookingStatus,
         createdAt: serverTimestamp(),
-        pricePerNight: selectedRoom.price,
+        pricePerNight: pricePerNightValue,
         paymentStatus: statusesThatImplyPaid.includes(status as BookingStatus) ? 'Payé' : 'En attente',
-        totalAmount,
+        totalAmount: totalAmountValue,
       };
       addDocumentNonBlocking(collection(firestore, 'reservations'), newBooking);
       if (roomStatusUpdate) {
@@ -221,12 +298,6 @@ export default function ReservationsPage() {
           updateDocumentNonBlocking(oldRoomRef, { status: 'Disponible' });
       }
 
-      const pricePerNight = roomHasChanged
-        ? selectedRoom.price 
-        : selectedBooking.pricePerNight ?? selectedRoom.price;
-
-      const totalAmount = pricePerNight * nightsCount;
-
       let newPaymentStatus: PaymentStatus = selectedBooking.paymentStatus || 'En attente';
       if (statusesThatImplyPaid.includes(status as BookingStatus)) {
         newPaymentStatus = 'Payé';
@@ -243,15 +314,15 @@ export default function ReservationsPage() {
         checkIn, 
         checkOut, 
         status: status as BookingStatus,
-        pricePerNight,
-        totalAmount,
+        pricePerNight: pricePerNightValue,
+        totalAmount: totalAmountValue,
         paymentStatus: newPaymentStatus,
       };
       updateDocumentNonBlocking(doc(firestore, 'reservations', selectedBooking.id), updatedBooking);
 
       if (roomStatusUpdate) {
           updateDocumentNonBlocking(roomRef, roomStatusUpdate);
-      } else if (!roomHasChanged && originalStatus === 'Enregistré') {
+      } else if (!roomHasChanged && originalStatus === 'Enregistré' && status !== 'Enregistré') {
           updateDocumentNonBlocking(roomRef, { status: 'Disponible' });
       }
 
@@ -285,21 +356,6 @@ export default function ReservationsPage() {
       booking.clientName.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [bookings, searchTerm]);
-
-  const calculateTotal = (booking: Booking) => {
-    if (booking.totalAmount) {
-      return booking.totalAmount;
-    }
-    if (booking.pricePerNight && booking.checkIn && booking.checkOut) {
-      const checkInDay = toDateSafe(booking.checkIn);
-      const checkOutDay = toDateSafe(booking.checkOut);
-      const nights = differenceInDays(checkOutDay, checkInDay);
-      const nightsCount = nights > 0 ? nights : 1;
-      return booking.pricePerNight * nightsCount;
-    }
-    return 0;
-  }
-
 
   return (
     <div>
@@ -351,6 +407,10 @@ export default function ReservationsPage() {
                         <span className="font-medium text-foreground">Départ: </span>
                         {format(toDateSafe(booking.checkOut), 'EEE, d MMM, yyyy')}
                     </div>
+                     <div className="text-sm text-muted-foreground">
+                        <span className="font-medium text-foreground">Prix / Nuit: </span>
+                        ${(booking.pricePerNight ?? 0).toFixed(2)}
+                    </div>
                     <div className="text-lg font-bold text-right">
                         ${calculateTotal(booking).toFixed(2)}
                     </div>
@@ -359,9 +419,27 @@ export default function ReservationsPage() {
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(booking)}>
                         <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(booking)}>
-                        <Trash className="h-4 w-4" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive">
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Êtes-vous absolument sûr(e) ?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Cette action est irréversible. La réservation pour {booking.clientName} pour la chambre {booking.roomNumber} sera définitivement supprimée.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Annuler</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(booking)} className={buttonVariants({ variant: 'destructive' })}>
+                            Supprimer
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                 </CardFooter>
             </Card>
             ))}
@@ -377,6 +455,7 @@ export default function ReservationsPage() {
                   <TableHead>Arrivée</TableHead>
                   <TableHead>Départ</TableHead>
                   <TableHead>Statut</TableHead>
+                  <TableHead>Prix / Nuit</TableHead>
                   <TableHead>Total</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -393,14 +472,33 @@ export default function ReservationsPage() {
                         {booking.status}
                       </Badge>
                     </TableCell>
+                    <TableCell>${(booking.pricePerNight ?? 0).toFixed(2)}</TableCell>
                     <TableCell>${calculateTotal(booking).toFixed(2)}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEditDialog(booking)}>
                           <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(booking)}>
-                          <Trash className="h-4 w-4" />
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive">
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Êtes-vous absolument sûr(e) ?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Cette action est irréversible. La réservation pour {booking.clientName} pour la chambre {booking.roomNumber} sera définitivement supprimée.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Annuler</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDelete(booking)} className={buttonVariants({ variant: 'destructive' })}>
+                              Supprimer
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -416,7 +514,7 @@ export default function ReservationsPage() {
       </Card>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{dialogMode === 'add' ? 'Ajouter une Nouvelle Réservation' : 'Modifier la Réservation'}</DialogTitle>
             <DialogDescription>
@@ -441,35 +539,59 @@ export default function ReservationsPage() {
                   <SelectContent>
                       {availableRoomsForBooking?.map(room => (
                         <SelectItem key={room.id} value={room.id}>
-                          Chambre {room.roomNumber} ({room.type})
+                          Chambre {room.roomNumber} ({room.type}) - ${room.price}/nuit
                         </SelectItem>
                       ))}
                   </SelectContent>
               </Select>
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="checkIn">
-                Arrivée
-              </Label>
-              <Input
-                id="checkIn"
-                type="date"
-                value={checkIn ? format(checkIn, 'yyyy-MM-dd') : ''}
-                onChange={(e) => setCheckIn(e.target.value ? parse(e.target.value, 'yyyy-MM-dd', new Date()) : undefined)}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="checkIn">
+                  Arrivée
+                </Label>
+                <Input
+                  id="checkIn"
+                  type="date"
+                  value={checkIn ? format(checkIn, 'yyyy-MM-dd') : ''}
+                  onChange={(e) => setCheckIn(e.target.value ? parse(e.target.value, 'yyyy-MM-dd', new Date()) : undefined)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="checkOut">
+                  Départ
+                </Label>
+                <Input
+                  id="checkOut"
+                  type="date"
+                  value={checkOut ? format(checkOut, 'yyyy-MM-dd') : ''}
+                  onChange={(e) => setCheckOut(e.target.value ? parse(e.target.value, 'yyyy-MM-dd', new Date()) : undefined)}
+                />
+              </div>
             </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="checkOut">
-                Départ
-              </Label>
-              <Input
-                id="checkOut"
-                type="date"
-                value={checkOut ? format(checkOut, 'yyyy-MM-dd') : ''}
-                onChange={(e) => setCheckOut(e.target.value ? parse(e.target.value, 'yyyy-MM-dd', new Date()) : undefined)}
-              />
+
+            <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                    <Label htmlFor="pricePerNight">Prix / Nuit</Label>
+                    <Input 
+                        id="pricePerNight" 
+                        type="number" 
+                        value={pricePerNight} 
+                        onChange={(e) => setPricePerNight(e.target.value)} 
+                        placeholder="e.g. 150"
+                    />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="totalAmount">Montant Total</Label>
+                    <Input 
+                        id="totalAmount" 
+                        type="number" 
+                        value={totalAmount} 
+                        onChange={(e) => setTotalAmount(e.target.value)} 
+                        placeholder="e.g. 300"
+                    />
+                </div>
             </div>
 
             <div className="grid gap-2">
@@ -500,5 +622,3 @@ export default function ReservationsPage() {
     </div>
   );
 }
-
-    
